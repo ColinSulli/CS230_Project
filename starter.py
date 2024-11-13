@@ -49,7 +49,7 @@ def data_init(annotations_file):
 def objective_setup(trail):
     annotations_file='~/Documents/CS230/Project/rsna-pneumonia-detection-challenge/stage_2_train_labels.csv'
     image_dir='/Users/suryasanapala/Documents/CS230/Project/rsna-pneumonia-detection-challenge/stage_2_train_images'
-    num_epochs=10
+    num_epochs=5
     device=torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     train_ids,validation_ids,annotations=data_init(annotations_file)
     train_loader,valid_loader= get_dataloaders(image_dir,train_ids,validation_ids,annotations)
