@@ -57,7 +57,7 @@ def objective_setup(trail):
 
     ######initialize model#############
     model=get_object_detection_model(2)
-    
+    model.to(device)
     ######Run objective################
     return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs)
 ######  python starter.py >> output.txt #############  
