@@ -12,7 +12,7 @@ from utils import convert_evalset_coco
 
 def data_init(annotations_file):
     # Setting up data
-    train_sample_size=1000
+    train_sample_size=100
     labels = pd.read_csv(annotations_file)
     
     print('Total positive sample size',len(labels['Target'] == 1))
@@ -59,7 +59,7 @@ def objective_setup(trail):
     model=get_object_detection_model(2)
     
     ######Run objective################
-    objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs)
+    return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs)
 ######  python starter.py >> output.txt #############  
 if __name__ == "__main__":
     #optuna trails to run training and evaluation and find optimal values for hyper paramater combination
