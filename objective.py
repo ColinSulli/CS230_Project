@@ -35,12 +35,12 @@ def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs)
             if trial.should_prune():
                 raise optuna.exceptions.TrialPruned()
         e = range(1, epochs + 1)
-        plt.plot(e, val_maps, label='Validation mAP')
-        plt.xlabel('Epoch')
-        plt.ylabel('mAP')
-        plt.title('Validation mAP over Epochs')
-        plt.legend()
-        plt.show()
+        #plt.plot(e, val_maps, label='Validation mAP')
+        #plt.xlabel('Epoch')
+        #plt.ylabel('mAP')
+        #plt.title('Validation mAP over Epochs')
+        #plt.legend()
+        #plt.show()
     except Exception as e:
         print(f"An exception occurred: {e}")
 
