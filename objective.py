@@ -44,4 +44,4 @@ def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs)
     except Exception as e:
         print(f"An exception occurred: {e}")
 
-return best_val_map
+    return best_val_map
