@@ -1,0 +1,13 @@
+training:
+  epochs: 10
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: "adam"
+
+data:
+  train_path: "/path/to/train/data"
+  val_path: "/path/to/val/data"
+
+model:
+  name: "resnet50"
+  pretrained: true
