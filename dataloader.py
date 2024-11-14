@@ -64,6 +64,15 @@ class PneumoniaDataset(Dataset):
         if self.transforms:
             image = self.transforms(image)
         return image, target
+def get_init_norm_transform():
+	transforms_list = [transforms.ToTensor()]
+	return transforms.Compose(transforms_list)
+
+def get_norm_transform(mean_value,std_value):
+	transforms_list = [transforms.ToTensor()]
+	transforms_list.append(transforms.Lambda(lambda x: x.repeat(3, 1, 1)))
+	transforms_list.append(transforms.Normalize(mean=[mean_value]*3, std=[std_value]*3))
+	return transforms.Compose(transforms_list)
 
 def get_transforms(train):
     transforms_list = [transforms.ToTensor()]
@@ -72,12 +81,26 @@ def get_transforms(train):
         transforms_list.append(transforms.RandomRotation(10))
         transforms_list.append(transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
     return transforms.Compose(transforms_list)
-def get_dataloaders(image_dir,train_ids,validation_ids,annotations):
+
+def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations):
+		train_dataset = PneumoniaDataset(
+	    image_dir=image_dir,
+	    annotations=annotations,
+	    patient_ids=train_ids,
+	    transforms=get_init_norm_transform
+	)
+
+	train_loader = torch.utils.data.DataLoader(
+	    train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+	)
+	return train_loader
+def get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean_value,std_value):
+	norm_transforms=get_norm_transform(mean_value,std_value)
 	train_dataset = PneumoniaDataset(
 	    image_dir=image_dir,
 	    annotations=annotations,
 	    patient_ids=train_ids,
-	    transforms=get_transforms(train=True)
+	    transforms=norm_transforms
 	)
 
 	train_loader = torch.utils.data.DataLoader(
@@ -87,7 +110,7 @@ def get_dataloaders(image_dir,train_ids,validation_ids,annotations):
 	    image_dir=image_dir,
 	    annotations=annotations,
 	    patient_ids=validation_ids,
-	    transforms=get_transforms(train=False)
+	    transforms=norm_transforms
 	)
 	val_loader = torch.utils.data.DataLoader(
 	    val_dataset, batch_size=10, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
