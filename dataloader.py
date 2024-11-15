@@ -83,7 +83,7 @@ def get_transforms(train):
     return transforms.Compose(transforms_list)
 
 def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations):
-		train_dataset = PneumoniaDataset(
+	train_dataset = PneumoniaDataset(
 	    image_dir=image_dir,
 	    annotations=annotations,
 	    patient_ids=train_ids,
