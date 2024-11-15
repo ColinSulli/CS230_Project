@@ -15,12 +15,20 @@ from utils import convert_evalset_coco
 
 def get_mean_std_dataset(image_dir,train_ids,validation_ids,annotations):
     t_loader=get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations)
-    channel_sum = 0
-    channel_squared_sum = 0
+    channel_sum = torch.zeros(3)
+    channel_squared_sum = torch.zeros(3)
     num_batches = 0
-    for images in t_loader:
-        channel_sum += torch.mean(images, dim=[0, 2, 3])
-        channel_squared_sum += torch.mean(images ** 2, dim=[0, 2, 3])
+    for b in t_loader:
+        images, targets = b
+        if isinstance(images, (list, tuple)):
+            images = torch.stack(images, dim=0)
+        elif isinstance(images, torch.Tensor):
+            pass
+        else:
+            raise ValueError(f"Unexpected type for images: {type(images)}")
+
+        channel_sum += torch.mean(images, dim=(0, 2, 3))
+        channel_squared_sum += torch.mean(images ** 2, dim=(0, 2, 3))
         num_batches += 1
     mean = channel_sum / num_batches
     std = (channel_squared_sum / num_batches - mean ** 2) ** 0.5
@@ -29,7 +37,7 @@ def data_init(annotations_file):
     # Setting up data
     train_sample_size=1000
     labels = pd.read_csv(annotations_file)
-    
+
     print('Total positive sample size',len(labels['Target'] == 1))
     print('Total negative sample size',len(labels['Target'] == 0))
     positive_patient_ids = labels[labels['Target'] == 1]['patientId'].unique()[:int(train_sample_size/2)]
@@ -62,21 +70,22 @@ def data_init(annotations_file):
     return patient_ids_train,patient_ids_validation,labels
 
 annotations_file='stage_2_train_labels.csv'
-image_dir='/home/ubuntu/cs230/stage_2_train_images'
+image_dir='/home/ec2-user/cs230/stage_2_train_images'
 num_epochs=5
 device=torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+print(f"Using device: {device}")
 train_ids,validation_ids,annotations=data_init(annotations_file)
 mean,std=get_mean_std_dataset(image_dir,train_ids,validation_ids,annotations)
-train_loader,valid_loader= get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean,std)
+train_loader,valid_loader= get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean,std,device)
 coco_format_validation_ds=convert_evalset_coco(validation_ids,annotations,'./')
 ######initialize model#############
 model=get_object_detection_model(2)
-
+model.to(device)
 def objective_setup(trail):
     return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs)
 
 if __name__ == "__main__":
-    
+
 
     #optuna trails to run training and evaluation and find optimal values for hyper paramater combination
     study = optuna.create_study(direction="maximize")
