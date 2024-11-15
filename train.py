@@ -65,10 +65,10 @@ def evaluate(model,valid_loader,valid_gt,device):
                     }
                     results.append(detection)
     if len(results)>0:                
-        coco_c = coco_c.loadRes(results)
+        coco_dt = coco_c.loadRes(results)
         
         for iou_type in coco_evaluator.coco_eval:
-            coco_evaluator.coco_eval[iou_type].cocoDt = coco_c
+            coco_evaluator.coco_eval[iou_type].cocoDt = coco_dt
             coco_evaluator.coco_eval[iou_type].params.imgIds = list(coco_c.getImgIds())
 
         for iou_type in coco_evaluator.coco_eval:
