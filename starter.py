@@ -14,11 +14,11 @@ from model import get_object_detection_model
 from utils import convert_evalset_coco
 
 def get_mean_std_dataset(image_dir,train_ids,validation_ids,annotations):
-    get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations)
+    t_loader=get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations)
     channel_sum = 0
     channel_squared_sum = 0
     num_batches = 0
-    for images in tqdm(train_loader, desc="Computing Mean and Std"):
+    for images in t_loader:
         channel_sum += torch.mean(images, dim=[0, 2, 3])
         channel_squared_sum += torch.mean(images ** 2, dim=[0, 2, 3])
         num_batches += 1
