@@ -1,18 +1,12 @@
-import optuna
-from objective import objective
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from dataloader import get_dataloaders_with_norm
-from dataloader import get_init_norm_transform
 from dataloader import get_norm_transform
 from dataloader import get_train_dataloader_no_norm
+import optuna
 
 import torch
 import torchvision
 from model import get_object_detection_model
 from utils import convert_evalset_coco
-
+import csv
 def get_mean_std_dataset(image_dir,train_ids,validation_ids,annotations):
     t_loader=get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations)
     channel_sum = torch.zeros(3)
@@ -33,9 +27,13 @@ def get_mean_std_dataset(image_dir,train_ids,validation_ids,annotations):
     mean = channel_sum / num_batches
     std = (channel_squared_sum / num_batches - mean ** 2) ** 0.5
     return mean,std
+def write_ids_to_file(ids,file_name):
+    with open(file_name, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(ids)
 def data_init(annotations_file):
     # Setting up data
-    train_sample_size=1000
+    train_sample_size=5000
     labels = pd.read_csv(annotations_file)
 
     print('Total positive sample size',len(labels['Target'] == 1))
@@ -68,28 +66,27 @@ def data_init(annotations_file):
     print('size of patient_ids_train',len(patient_ids_train))
     print('size of patient_ids_validation',len(patient_ids_validation))
     return patient_ids_train,patient_ids_validation,labels
-
+optuna.logging.set_verbosity(optuna.logging.DEBUG)
 annotations_file='stage_2_train_labels.csv'
 image_dir='/home/ec2-user/cs230/stage_2_train_images'
-num_epochs=5
+num_epochs=15
 device=torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print(f"Using device: {device}")
 train_ids,validation_ids,annotations=data_init(annotations_file)
+write_ids_to_file(train_ids,'training_data.csv')
+write_ids_to_file(validation_ids,'validation_data.csv')
 mean,std=get_mean_std_dataset(image_dir,train_ids,validation_ids,annotations)
 train_loader,valid_loader= get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean,std,device)
 coco_format_validation_ds=convert_evalset_coco(validation_ids,annotations,'./')
-######initialize model#############
-model=get_object_detection_model(2)
-model.to(device)
 def objective_setup(trail):
-    return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs)
+    return objective(trail,train_loader,valid_loader,device,coco_format_validation_ds,num_epochs)
 
 if __name__ == "__main__":
 
 
     #optuna trails to run training and evaluation and find optimal values for hyper paramater combination
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective_setup, n_trials=100)
+    study.optimize(objective_setup, n_trials=15)
     print('Best trial:')
     trial = study.best_trial
 
