@@ -3,14 +3,15 @@ import optuna
 from train import train, evaluate
 from dataloader import get_dataloaders
 import torch
-
+from torch.utils.tensorboard import SummaryWriter
+from datetime import datetime
 
 def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs):
     # Hyperparameter suggestions
     try:
-        lr = trial.suggest_loguniform('lr', 1e-5, 1e-3)
-        momentum = trial.suggest_uniform('momentum', 0.8, 0.99)
-        weight_decay = trial.suggest_loguniform('weight_decay', 1e-6, 1e-3)
+        lr = trial.suggest_float('lr', 1e-5, 1e-3, log=True)
+        momentum = trial.suggest_float('momentum', 0.8, 0.99, log=True)
+        weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
         
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
@@ -18,13 +19,17 @@ def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs)
         torch.autograd.set_detect_anomaly(True)
         val_maps = []
         for epoch in range(epochs):
-            train(model, optimizer, train_loader, device, epoch)
+            # set up tensorboard writer, file saves as current date/time
+            summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
+            train(model, optimizer, train_loader, device, epoch, summary_writer)
             lr_scheduler.step()
             coco_evaluator = evaluate(model, validation_loader,valid_gt, device=device)
             
             stats = coco_evaluator.coco_eval['bbox'].stats
             val_map = stats[0]
             val_maps.append(val_map)
+
+            summary_writer.add_scalar('dev_acc', val_map, epoch)
             
             if val_map > best_val_map:
                 best_val_map = val_map

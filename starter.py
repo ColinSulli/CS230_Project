@@ -48,7 +48,7 @@ def data_init(annotations_file):
 
 def objective_setup(trail):
     annotations_file='stage_2_train_labels.csv'
-    image_dir='/home/ubuntu/cs230/stage_2_train_images'
+    image_dir='./stage_2_train_images'
     num_epochs=5
     device=torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     train_ids,validation_ids,annotations=data_init(annotations_file)

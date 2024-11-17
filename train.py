@@ -13,7 +13,7 @@ def replace_relu_with_inplace_false(module):
             setattr(module, name, nn.ReLU(inplace=False))
         else:
             replace_relu_with_inplace_false(child)
-def train(model, optimizer, train_loader, device, epoch):
+def train(model, optimizer, train_loader, device, epoch, summary_writer):
     model.train()
     replace_relu_with_inplace_false(model)
     i = 0
@@ -32,7 +32,8 @@ def train(model, optimizer, train_loader, device, epoch):
 
         if i % 100 == 0:
             print(f"Epoch {epoch}, Iteration {i}, Loss: {losses.item()}, Number of Images per iteration: {len(images)}")
-        i += 1    
+            summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
+        i += 1
 
 def evaluate(model,valid_loader,valid_gt,device):
     model.eval()
