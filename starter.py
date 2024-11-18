@@ -12,7 +12,7 @@ from utils import convert_evalset_coco
 
 def data_init(annotations_file):
     # Setting up data
-    train_sample_size=8
+    train_sample_size=20000
     labels = pd.read_csv(annotations_file)
     
     print('Total positive sample size',len(labels['Target'] == 1))
