@@ -51,6 +51,9 @@ def objective_setup(trail):
     image_dir='./stage_2_train_images'
     num_epochs=5
     device=torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    print("Device:", device)
+
     train_ids,validation_ids,annotations=data_init(annotations_file)
     train_loader,valid_loader= get_dataloaders(image_dir,train_ids,validation_ids,annotations)
     coco_format_validation_ds=convert_evalset_coco(validation_ids,annotations,'./')
