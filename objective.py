@@ -9,9 +9,9 @@ from datetime import datetime
 def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs):
     # Hyperparameter suggestions
     try:
-        lr = trial.suggest_float('lr', 1e-5, 1e-3, log=True)
-        momentum = trial.suggest_float('momentum', 0.8, 0.99, log=True)
-        weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
+        lr = trial.suggest_float('lr', 0.0001, 0.0001, log=True)
+        momentum = trial.suggest_float('momentum', 0.9323368245702841, 0.9323368245702841, log=True)
+        weight_decay = trial.suggest_float('weight_decay', 0.0001298489873419346, 0.0001298489873419346, log=True)
         
         optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)

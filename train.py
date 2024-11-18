@@ -6,6 +6,7 @@ from coco_eval import CocoEvaluator
 from pycocotools.coco import COCO
 import torch.nn as nn
 from utils import convert_evalset_coco
+from tqdm import tqdm
 
 def replace_relu_with_inplace_false(module):
     for name, child in module.named_children():
@@ -17,7 +18,7 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
     model.train()
     replace_relu_with_inplace_false(model)
     i = 0
-    for images, targets in train_loader:
+    for images, targets in tqdm(train_loader, desc=f'train', disable=False):
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
