@@ -46,6 +46,9 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer,train_id
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
         i += 1
 
+        if i == 1000:
+            break
+
 def evaluate(model,valid_loader,valid_gt,device):
     model.eval()
  #   valid_gt=convert_evalset_coco(valid_loader.dataset.patient_ids,'./')
