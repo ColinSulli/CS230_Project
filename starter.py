@@ -12,13 +12,12 @@ from utils import convert_evalset_coco
 
 def data_init(annotations_file):
     # Setting up data
-    train_sample_size=20000
     labels = pd.read_csv(annotations_file)
     
     print('Total positive sample size',len(labels['Target'] == 1))
     print('Total negative sample size',len(labels['Target'] == 0))
-    positive_patient_ids = labels[labels['Target'] == 1]['patientId'].unique()[:int(train_sample_size/2)]
-    negative_patient_ids = labels[labels['Target'] == 0]['patientId'].unique()[:int(train_sample_size/2)]
+    positive_patient_ids = labels[labels['Target'] == 1]['patientId'].unique()
+    negative_patient_ids = labels[labels['Target'] == 0]['patientId'].unique()
     np.random.seed(42)
     np.random.shuffle(positive_patient_ids)
     np.random.shuffle(negative_patient_ids)
@@ -44,25 +43,27 @@ def data_init(annotations_file):
     patient_ids_validation = list(positive_val_ids) + list(negative_val_ids)
     print('size of patient_ids_train',len(patient_ids_train))
     print('size of patient_ids_validation',len(patient_ids_validation))
-    return patient_ids_train,patient_ids_validation,labels
+
+    return patient_ids_train, patient_ids_validation, labels
 
 def objective_setup(trail):
     annotations_file='stage_2_train_labels.csv'
     image_dir='./stage_2_train_images'
     num_epochs=5
-    device=torch.device('cuda')
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     print("Device:", device)
 
-    train_ids,validation_ids,annotations=data_init(annotations_file)
-    train_loader,valid_loader= get_dataloaders(image_dir,train_ids,validation_ids,annotations)
+    train_ids, validation_ids, annotations = data_init(annotations_file)
+
+    train_loader, valid_loader = get_dataloaders(image_dir, train_ids, validation_ids, annotations)
     coco_format_validation_ds=convert_evalset_coco(validation_ids,annotations,'./')
 
     ######initialize model#############
     model=get_object_detection_model(2)
     model.to(device)
     ######Run objective################
-    return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs)
+    return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs,train_ids)
 ######  python starter.py >> output.txt #############  
 if __name__ == "__main__":
     #optuna trails to run training and evaluation and find optimal values for hyper paramater combination

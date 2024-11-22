@@ -6,7 +6,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
-def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs):
+def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs,train_ids):
     # Hyperparameter suggestions
     try:
         lr = trial.suggest_float('lr', 0.0001, 0.0001, log=True)
@@ -21,7 +21,7 @@ def objective(trial,train_loader,validation_loader,device,model,valid_gt,epochs)
         for epoch in range(epochs):
             # set up tensorboard writer, file saves as current date/time
             summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
-            train(model, optimizer, train_loader, device, epoch, summary_writer)
+            train(model, optimizer, train_loader, device, epoch, summary_writer,train_ids)
             lr_scheduler.step()
             coco_evaluator = evaluate(model, validation_loader,valid_gt, device=device)
             

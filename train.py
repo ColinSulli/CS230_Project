@@ -14,7 +14,7 @@ def replace_relu_with_inplace_false(module):
             setattr(module, name, nn.ReLU(inplace=False))
         else:
             replace_relu_with_inplace_false(child)
-def train(model, optimizer, train_loader, device, epoch, summary_writer):
+def train(model, optimizer, train_loader, device, epoch, summary_writer,train_ids):
     model.train()
     replace_relu_with_inplace_false(model)
     i = 0
@@ -22,9 +22,19 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
+        #print(train_ids[targets[0]['image_id']])
+        #print(images)
+        #print(targets)
+
         # Forward pass
         loss_dict = model(images, targets)
+
+        #print(targets)
+        #print(loss_dict)
+
         losses = sum([loss for loss in loss_dict.values()])
+
+        #print(losses)
 
         # Backward pass
         optimizer.zero_grad()

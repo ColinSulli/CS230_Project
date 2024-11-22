@@ -24,9 +24,9 @@ class PneumoniaDataset(Dataset):
 
         # Get annotations for this image
         records = self.annotations[self.annotations['patientId'] == patient_id]
-
         boxes = []
         labels = []
+
         if len(records) == 0 or records['Target'].sum() == 0:
             # No pneumonia in this image
             boxes = torch.zeros((0, 4), dtype=torch.float32)
@@ -39,7 +39,7 @@ class PneumoniaDataset(Dataset):
                     width = row['width']
                     height = row['height']
                     boxes.append([x, y, x + width, y + height])
-                    labels.append(1)   
+                    labels.append(1)
 
             # Convert to tensors
             boxes = torch.as_tensor(boxes, dtype=torch.float32)
@@ -63,6 +63,11 @@ class PneumoniaDataset(Dataset):
 
         if self.transforms:
             image = self.transforms(image)
+
+        #print(patient_id)
+        #print(target)
+        #print("________________")
+
         return image, target
 
 def get_transforms(train):
@@ -77,11 +82,11 @@ def get_dataloaders(image_dir,train_ids,validation_ids,annotations):
 	    image_dir=image_dir,
 	    annotations=annotations,
 	    patient_ids=train_ids,
-	    transforms=get_transforms(train=True)
+	    transforms=get_transforms(train=False)
 	)
 
 	train_loader = torch.utils.data.DataLoader(
-	    train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+	    train_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
 	)
 	val_dataset = PneumoniaDataset(
 	    image_dir=image_dir,
@@ -90,6 +95,6 @@ def get_dataloaders(image_dir,train_ids,validation_ids,annotations):
 	    transforms=get_transforms(train=False)
 	)
 	val_loader = torch.utils.data.DataLoader(
-	    val_dataset, batch_size=10, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+	    val_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
 	)
 	return train_loader,val_loader
