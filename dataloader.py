@@ -82,19 +82,19 @@ def get_dataloaders(image_dir,train_ids,validation_ids,annotations):
 	    image_dir=image_dir,
 	    annotations=annotations,
 	    patient_ids=train_ids,
-	    transforms=get_transforms(train=True)
+	    transforms=get_transforms(train=False)
 	)
 
 	train_loader = torch.utils.data.DataLoader(
-	    train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+	    train_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
 	)
 	val_dataset = PneumoniaDataset(
 	    image_dir=image_dir,
 	    annotations=annotations,
 	    patient_ids=validation_ids,
-	    transforms=get_transforms(train=True)
+	    transforms=get_transforms(train=False)
 	)
 	val_loader = torch.utils.data.DataLoader(
-	    val_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+	    val_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
 	)
 	return train_loader,val_loader

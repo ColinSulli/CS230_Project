@@ -63,7 +63,7 @@ def objective_setup(trail):
     model=get_object_detection_model(2)
     model.to(device)
     ######Run objective################
-    return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs,train_ids)
+    return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs,train_ids,validation_ids)
 ######  python starter.py >> output.txt #############  
 if __name__ == "__main__":
     #optuna trails to run training and evaluation and find optimal values for hyper paramater combination
