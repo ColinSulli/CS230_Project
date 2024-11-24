@@ -20,7 +20,7 @@ class PneumoniaDataset(Dataset):
         img_path = os.path.join(self.image_dir, patient_id + '.dcm')
         dicom = pydicom.dcmread(img_path)
         image = dicom.pixel_array
-        image = Image.fromarray(image).convert('L')
+        image = Image.fromarray(image).convert('RGB')
 
         # Get annotations for this image
         records = self.annotations[self.annotations['patientId'] == patient_id]
