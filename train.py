@@ -104,12 +104,11 @@ def filter_prediction_scores(prediction, filter_threshold):
 
 def calculate_nms(filtered_predictions, iou_threshold):
     keep_indices = nms(filtered_predictions[0]['boxes'], filtered_predictions[0]['scores'], iou_threshold)
-    filtered_predictions = [
+    return [
         {key: val[keep_indices]
          for key, val in p.items()}
         for p in filtered_predictions
     ]
-    return filtered_predictions
 
 def calculate_precision_recall_correct(
         total_positive, false_positive, false_negative, correct, num_examples):
@@ -171,7 +170,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
 
     for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
         precision, recall, accuracy = calculate_precision_recall_correct(
-        total_positive[i], false_positive[i], false_negative[i], correct[i], len(valid_loader))
+            total_positive[i], false_positive[i], false_negative[i], correct[i], len(valid_loader))
 
         print("At IOU ", iou_threshold)
         print("Precision: ", precision)
