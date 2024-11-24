@@ -76,6 +76,7 @@ def calculate_iou(box_1, box_2):
     # return the intersection over union value
     return iou
 
+
 def save_model(model, optimizer, filepath):
     save_info = {
         'model': model.state_dict(),
@@ -138,7 +139,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.5)
 
             # Perform non max suppression
-            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold)
+            #filtered_predictions = calculate_nms(filtered_predictions, iou_threshold)
 
             for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
                 matched_idx = set()
