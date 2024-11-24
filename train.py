@@ -7,6 +7,9 @@ from pycocotools.coco import COCO
 import torch.nn as nn
 from utils import convert_evalset_coco
 from tqdm import tqdm
+from torchvision.ops import nms
+import numpy as np
+from datetime import datetime
 
 def replace_relu_with_inplace_false(module):
     for name, child in module.named_children():
@@ -46,7 +49,7 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
         i += 1
 
-        #if i == 100:
+        #if i == 10:
         #    break
 
 def calculate_iou(box_1, box_2):
@@ -73,108 +76,103 @@ def calculate_iou(box_1, box_2):
     # return the intersection over union value
     return iou
 
-def evaluate(model, valid_loader, valid_gt, device, validation_ids):
+def save_model(model, optimizer, filepath):
+    save_info = {
+        'model': model.state_dict(),
+        'optim': optimizer.state_dict(),
+        'torch_rng': torch.random.get_rng_state(),
+    }
+
+    torch.save(save_info, filepath)
+    print(f"save the model to {filepath}")
+
+
+def filter_prediction_scores(prediction, filter_threshold):
+    return [
+        {key: val[torch.where(p['scores'] > filter_threshold)]
+         for key, val in p.items()}
+        for p in prediction
+    ]
+
+
+def calculate_nms(filtered_predictions, iou_threshold):
+    keep_indices = nms(filtered_predictions[0]['boxes'], filtered_predictions[0]['scores'], iou_threshold)
+    filtered_predictions = [
+        {key: val[keep_indices]
+         for key, val in p.items()}
+        for p in filtered_predictions
+    ]
+    return filtered_predictions
+
+def calculate_precision_recall_correct(
+        total_positive, false_positive, false_negative, correct, num_examples):
+    precision = total_positive / ((total_positive + false_positive) + .00001)
+    recall = total_positive / ((total_positive + false_negative) + .00001)
+    accuracy = correct / num_examples
+
+    return precision, recall, accuracy
+
+def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
     model.eval()
     iou_threshold = 0.5
-    coco_c=COCO(valid_gt)
-    coco_evaluator = CocoEvaluator(coco_c, iou_types=['bbox'])
-    results=[]
 
-    total_positive, false_positive, false_negative = 0, 0, 0
-    correct = 0
+    total_positive = [0] * 7
+    false_positive = [0] * 7
+    false_negative = [0] * 7
+    correct = [0] * 7
     ious = []
-    index = 0
+    average_ious = [[] for _ in range(7)]
+    index = -1
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        #if index == 100:
+        #if index == 10:
         #    break
 
         images = list(img.to(device) for img in images)
         with torch.no_grad():
+            # get predictions
             prediction = model(images)
 
-            '''print(validation_ids[targets[0]['image_id']])
-            print(prediction)
-            print(targets)'''
-
             # filter out bad scores
-            filter_threshold = 0.5
-            filtered_predictions = [
-                {key: val[torch.where(p['scores'] > filter_threshold)]
-                 for key, val in p.items()}
-                for p in prediction
-            ]
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.5)
 
-            iou_threshold = 0.5
-            highest_iou = 0
-            matched_idx = set()
-            for pred_box in filtered_predictions[0]['boxes']:
-                matched = False
-                for idx, target_box in enumerate(targets[0]['boxes']):
-                    iou = calculate_iou(pred_box, target_box)
-                    if iou >= iou_threshold and idx not in matched_idx:
-                        total_positive += 1
-                        matched_idx.add(idx)
-                        matched = True
-                        ious.append(iou)
-                if not matched:
-                    false_positive += 1
+            # Perform non max suppression
+            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold)
 
-            if targets[0]['boxes'].numel() > 0 and filtered_predictions[0]['boxes'].numel() == 0:
-                false_negative += 1
+            for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
+                matched_idx = set()
+                for pred_box in filtered_predictions[0]['boxes']:
+                    matched = False
+                    for idx, target_box in enumerate(targets[0]['boxes']):
+                        iou = calculate_iou(pred_box, target_box)
+                        if iou >= iou_threshold and idx not in matched_idx:
+                            total_positive[i] += 1
+                            matched_idx.add(idx)
+                            matched = True
+                            ious.append(iou)
+                    if not matched:
+                        false_positive[i] += 1
 
-            if targets[0]['boxes'].numel() == filtered_predictions[0]['boxes'].numel():
-                correct += 1
+                # determine false_negative
+                if targets[0]['boxes'].numel() > 0 and filtered_predictions[0]['boxes'].numel() == 0:
+                    false_negative[i] += 1
 
-            #print(highest_iou)
+                # binary accuracy
+                if targets[0]['boxes'].numel() == filtered_predictions[0]['boxes'].numel():
+                    correct[i] += 1
 
-    # recall
+    for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
+        precision, recall, accuracy = calculate_precision_recall_correct(
+        total_positive[i], false_positive[i], false_negative[i], correct[i], len(valid_loader))
 
-    print(total_positive, false_positive, false_negative)
+        print("At IOU ", iou_threshold)
+        print("Precision: ", precision)
+        print("Recall: ", recall)
+        print("Accuracy: ", accuracy)
+        print("---------------------")
 
-    precision = total_positive / ((total_positive + false_positive) + .001)
-    recall = total_positive / ((total_positive + false_negative) + .001)
-    average_iou = sum(ious) / (len(ious) + .001)
-    accuracy = correct / 100
+    save_model(model, optimizer, f'./saved_models/{datetime.now()}')
 
-    print("Precision: ", precision)
-    print("Recall: ", recall)
-    print("Average IOU: ", average_iou)
-    print("Accuracy: ", accuracy)
-
-
-    '''outputs = [{k: v for k, v in t.items()} for t in outputs]
-            for i, output in enumerate(outputs):
-                image_id = targets[i]['image_id'].item()
-                # Convert boxes to COCO format (x, y, width, height)
-                boxes = output['boxes']
-                boxes = boxes.clone()
-                boxes[:, 2:] -= boxes[:, :2]
-                boxes = boxes.tolist()
-                scores = output['scores'].tolist()
-                labels = output['labels'].tolist()
-
-                # Create detection results in COCO format
-                for box, score, label in zip(boxes, scores, labels):
-                    detection = {
-                        "image_id": image_id,
-                        "category_id": int(label),
-                        "bbox": box,
-                        "score": float(score)
-                    }
-                    results.append(detection)
-    if len(results)>0:                
-        coco_c = coco_c.loadRes(results)
-        
-        for iou_type in coco_evaluator.coco_eval:
-            coco_evaluator.coco_eval[iou_type].cocoDt = coco_c
-            coco_evaluator.coco_eval[iou_type].params.imgIds = list(coco_c.getImgIds())
-
-        for iou_type in coco_evaluator.coco_eval:
-            coco_evaluator.coco_eval[iou_type].evaluate()
-            coco_evaluator.coco_eval[iou_type].accumulate()
-            coco_evaluator.coco_eval[iou_type].summarize()'''
-
-    return coco_evaluator
+    return None
     

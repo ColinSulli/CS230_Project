@@ -86,7 +86,7 @@ def get_dataloaders(image_dir,train_ids,validation_ids,annotations):
 	)
 
 	train_loader = torch.utils.data.DataLoader(
-	    train_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+	    train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
 	)
 	val_dataset = PneumoniaDataset(
 	    image_dir=image_dir,

@@ -23,9 +23,9 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
             summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
             train(model, optimizer, train_loader, device, epoch, summary_writer, train_ids)
             lr_scheduler.step()
-            coco_evaluator = evaluate(model, validation_loader, valid_gt, device, validation_ids)
+            coco_evaluator = evaluate(model, validation_loader, valid_gt, device, validation_ids, optimizer)
             
-            stats = coco_evaluator.coco_eval['bbox'].stats
+            '''stats = coco_evaluator.coco_eval['bbox'].stats
             val_map = stats[0]
             val_maps.append(val_map)
 
@@ -38,7 +38,7 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
             
             # Handle pruning
             if trial.should_prune():
-                raise optuna.exceptions.TrialPruned()
+                raise optuna.exceptions.TrialPruned()'''
         e = range(1, epochs + 1)
         #plt.plot(e, val_maps, label='Validation mAP')
         #plt.xlabel('Epoch')
