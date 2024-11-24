@@ -133,8 +133,8 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        if index == 10:
-            break
+        #if index == 10:
+        #    break
 
         images = list(img.to(device) for img in images)
         with torch.no_grad():
