@@ -18,11 +18,13 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
         best_val_map=0.0
         torch.autograd.set_detect_anomaly(True)
         val_maps = []
+        skip_train = True
         for epoch in range(epochs):
             # set up tensorboard writer, file saves as current date/time
-            summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
-            train(model, optimizer, train_loader, device, epoch, summary_writer, train_ids)
-            lr_scheduler.step()
+            if not skip_train:
+                summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
+                train(model, optimizer, train_loader, device, epoch, summary_writer, train_ids)
+                lr_scheduler.step()
             coco_evaluator = evaluate(model, validation_loader, valid_gt, device, validation_ids, optimizer)
             
             '''stats = coco_evaluator.coco_eval['bbox'].stats

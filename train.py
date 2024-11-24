@@ -10,6 +10,7 @@ from tqdm import tqdm
 from torchvision.ops import nms
 import numpy as np
 from datetime import datetime
+from model import get_object_detection_model
 
 def replace_relu_with_inplace_false(module):
     for name, child in module.named_children():
@@ -49,8 +50,8 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
         i += 1
 
-        #if i == 10:
-        #    break
+        if i == 10:
+            break
 
 def calculate_iou(box_1, box_2):
     # determine the (x, y)-coordinates of the intersection rectangle
@@ -76,6 +77,11 @@ def calculate_iou(box_1, box_2):
     # return the intersection over union value
     return iou
 
+def load_model(filepath):
+    saved = torch.load(filepath)
+    model = get_object_detection_model(2)
+    model.load_state_dict(saved['model'])
+    print(f"load model from {filepath}")
 
 def save_model(model, optimizer, filepath):
     save_info = {
@@ -127,8 +133,8 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        #if index == 10:
-        #    break
+        if index == 10:
+            break
 
         images = list(img.to(device) for img in images)
         with torch.no_grad():

@@ -8,6 +8,7 @@ import torch
 import torchvision
 from model import get_object_detection_model
 from utils import convert_evalset_coco
+from train import load_model
 
 
 def data_init(annotations_file):
@@ -60,7 +61,12 @@ def objective_setup(trail):
     coco_format_validation_ds=convert_evalset_coco(validation_ids,annotations,'./')
 
     ######initialize model#############
-    model=get_object_detection_model(2)
+    model = None
+    load_saved = False
+    if load_saved:
+        load_model("./saved_models/2024-11-24 14:07:46.512402")
+    else:
+        model = get_object_detection_model(2)
     model.to(device)
     ######Run objective################
     return objective(trail,train_loader,valid_loader,device,model,coco_format_validation_ds,num_epochs,train_ids,validation_ids)
