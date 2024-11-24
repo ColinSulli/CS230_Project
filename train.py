@@ -132,8 +132,8 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        #if index == 100:
-        #    break
+        if index == 2000:
+            break
 
         images = list(img.to(device) for img in images)
         with torch.no_grad():
@@ -144,13 +144,13 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             #print(prediction)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.7)
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.85)
 
             # Perform non max suppression
             filtered_predictions = calculate_nms(filtered_predictions, iou_threshold)
 
-            #print("FILTERED")
-            #print(filtered_predictions)
+            print("FILTERED")
+            print(filtered_predictions)
             #exit()
 
             for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
@@ -159,6 +159,9 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
                     matched = False
                     for idx, target_box in enumerate(targets[0]['boxes']):
                         iou = calculate_iou(pred_box, target_box)
+
+                        print(iou)
+
                         if iou >= iou_threshold and idx not in matched_idx:
                             total_positive[i] += 1
                             matched_idx.add(idx)
