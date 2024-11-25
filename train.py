@@ -53,7 +53,11 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
         if i == 10:
             break
 
+
 def calculate_iou(box_1, box_2):
+
+    #print(box_1)
+    #print(box_2)
     # determine the (x, y)-coordinates of the intersection rectangle
     xA = max(box_1[0], box_2[0])
     yA = max(box_1[1], box_2[1])
@@ -64,6 +68,9 @@ def calculate_iou(box_1, box_2):
     interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
     if interArea == 0:
         return 0
+
+    #print(interArea)
+    #exit()
     # compute the area of both the prediction and ground-truth
     # rectangles
     boxAArea = abs((box_1[2] - box_1[0]) * (box_1[3] - box_1[1]))
@@ -132,7 +139,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        if index == 1000:
+        if index == 2000:
             break
 
         images = list(img.to(device) for img in images)
@@ -147,21 +154,25 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.75)
 
             # Perform non max suppression
-            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold)
+            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
 
-            print("FILTERED")
-            print(filtered_predictions)
+            #print("FILTERED")
+            #print(filtered_predictions)
             #exit()
 
             for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
                 matched_idx = set()
                 for pred_box in filtered_predictions[0]['boxes']:
+
                     matched = False
                     for idx, target_box in enumerate(targets[0]['boxes']):
+
+                        #print(filtered_predictions)
+                        #print(targets)
+
                         iou = calculate_iou(pred_box, target_box)
 
-                        print(iou)
-
+                        #print(iou)
                         if iou >= iou_threshold and idx not in matched_idx:
                             total_positive[i] += 1
                             matched_idx.add(idx)
