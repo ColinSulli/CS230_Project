@@ -85,10 +85,16 @@ def calculate_iou(box_1, box_2):
     return iou
 
 def load_model(filepath):
-    saved = torch.load(filepath)
+    saved = None
+    if torch.cuda.is_available():
+        saved = torch.load(filepath)
+    else:
+        saved = torch.load(filepath,map_location=torch.device('cpu'))
     model = get_object_detection_model(2)
     model.load_state_dict(saved['model'])
     print(f"load model from {filepath}")
+
+    return model
 
 def save_model(model, optimizer, filepath):
     save_info = {
