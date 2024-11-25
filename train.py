@@ -45,8 +45,8 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
         losses.backward()
         optimizer.step()
 
-        if i != 0 and i % 100 == 0:
-            print(f"Epoch {epoch}, Iteration {i}, Loss: {losses.item()}, Number of Images per iteration: {len(images)}")
+        if i != 0 and i % 10 == 0:
+            #print(f"Epoch {epoch}, Iteration {i}, Loss: {losses.item()}, Number of Images per iteration: {len(images)}")
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
         i += 1
 
