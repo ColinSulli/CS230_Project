@@ -6,6 +6,7 @@ import pydicom
 from torchvision import transforms
 from PIL import Image
 from torchvision.transforms import functional as F
+import numpy as np
 
 class PneumoniaDataset(Dataset):
     def __init__(self, image_dir, annotations, patient_ids,transforms=None):
@@ -22,10 +23,10 @@ class PneumoniaDataset(Dataset):
         img_path = os.path.join(self.image_dir, patient_id + '.dcm')
         dicom = pydicom.dcmread(img_path)
         image = dicom.pixel_array
-        #image = resize_image(image, target_size=800)
         image = Image.fromarray(image).convert('L')
-
-        #print(image)
+        original_size = image.size
+        image = resize_image(image, target_size=800)
+        new_size = image.size
 
         # Get annotations for this image
         records = self.annotations[self.annotations['patientId'] == patient_id]
@@ -43,7 +44,9 @@ class PneumoniaDataset(Dataset):
                     y = row['y']
                     width = row['width']
                     height = row['height']
-                    boxes.append([x, y, x + width, y + height])
+                    original_box = [x, y, x + width, y + height]
+                    scaled_box = resize_boxes(original_box, original_size, new_size)
+                    boxes.append(scaled_box)
                     labels.append(1)
 
             # Convert to tensors
@@ -77,13 +80,21 @@ class PneumoniaDataset(Dataset):
 
 def resize_image(image, target_size=800):
     original_size = image.size  # (width, height)
-
-    print(original_size)
-
     scale = target_size / min(original_size)
     new_size = (int(original_size[0] * scale), int(original_size[1] * scale))
     resized_image = F.resize(image, new_size)
+
     return resized_image
+
+
+def resize_boxes(boxes, original_size, new_size):
+    scale_x = new_size[0] / original_size[0]
+    scale_y = new_size[1] / original_size[1]
+    boxes[0] *= scale_x
+    boxes[2] *= scale_x
+    boxes[1] *= scale_y
+    boxes[3] *= scale_y
+    return boxes
 
 def get_transforms(train):
     transforms_list = [transforms.ToTensor()]
