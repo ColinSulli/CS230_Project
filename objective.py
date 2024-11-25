@@ -24,7 +24,7 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
             # set up tensorboard writer, file saves as current date/time
             if not skip_train:
                 train(model, optimizer, train_loader, device, epoch, summary_writer, train_ids)
-                lr_scheduler.step()
+                #lr_scheduler.step()
             coco_evaluator = evaluate(model, validation_loader, valid_gt, device, validation_ids, optimizer)
             
             '''stats = coco_evaluator.coco_eval['bbox'].stats
