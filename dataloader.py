@@ -25,7 +25,7 @@ class PneumoniaDataset(Dataset):
         #image = resize_image(image, target_size=800)
         image = Image.fromarray(image).convert('L')
 
-        print(image)
+        #print(image)
 
         # Get annotations for this image
         records = self.annotations[self.annotations['patientId'] == patient_id]
