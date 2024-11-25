@@ -12,8 +12,9 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
     try:
         model = get_object_detection_model(2)
         model.to(device)
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.00084232, momentum=0.9003619, weight_decay=0.00001106)
-        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        #optimizer = torch.optim.SGD(model.parameters(), lr=0.00084232, momentum=0.9003619, weight_decay=0.00001106)
+        #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
         best_val_map = 0.0
         torch.autograd.set_detect_anomaly(True)
         val_maps = []
