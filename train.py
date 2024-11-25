@@ -145,7 +145,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        if index == 2000:
+        if index == 1000:
             break
 
         images = list(img.to(device) for img in images)
@@ -154,13 +154,13 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.3)
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.25)
 
             #print("FILTERED PREDICTION")
             #print(filtered_predictions)
 
             # Perform non max suppression
-            #filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
+            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.3)
 
             #print("FILTERED")
             #print(filtered_predictions)
