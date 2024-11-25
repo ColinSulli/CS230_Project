@@ -26,19 +26,10 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
-        #print(train_ids[targets[0]['image_id']])
-        #print(images)
-        #print(targets)
-
         # Forward pass
         loss_dict = model(images, targets)
 
-        #print(targets)
-        #print(loss_dict)
-
         losses = sum([loss for loss in loss_dict.values()])
-
-        #print(losses)
 
         # Backward pass
         optimizer.zero_grad()
@@ -46,7 +37,6 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
         optimizer.step()
 
         if i != 0 and i % 10 == 0:
-            #print(f"Epoch {epoch}, Iteration {i}, Loss: {losses.item()}, Number of Images per iteration: {len(images)}")
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
         i += 1
 
@@ -131,7 +121,7 @@ def calculate_precision_recall_correct(
 
     return precision, recall, accuracy
 
-def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
+def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, summary_writer, epoch):
     model.eval()
     iou_threshold = 0.5
 
@@ -154,17 +144,10 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.5)
-
-            #print("FILTERED PREDICTION")
-            #print(filtered_predictions)
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.4)
 
             # Perform non max suppression
             filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
-
-            #print("FILTERED")
-            #print(filtered_predictions)
-            #exit()
 
             for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
                 matched_idx = set()
@@ -173,12 +156,8 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
                     matched = False
                     for idx, target_box in enumerate(targets[0]['boxes']):
 
-                        #print(filtered_predictions)
-                        #print(targets)
-
                         iou = calculate_iou(pred_box, target_box)
 
-                        #print(iou)
                         if iou >= iou_threshold and idx not in matched_idx:
                             total_positive[i] += 1
                             matched_idx.add(idx)
@@ -197,7 +176,12 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
 
     for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
         precision, recall, accuracy = calculate_precision_recall_correct(
-            total_positive[i], false_positive[i], false_negative[i], correct[i], len(valid_loader))
+            total_positive[i], false_positive[i], false_negative[i], correct[i], 1500)
+
+        # log data in tensorboard
+        summary_writer.add_scalar(f'Precision at IOU: {iou_threshold}', precision, epoch)
+        summary_writer.add_scalar(f'Recall at IOU: {iou_threshold}', recall, epoch)
+        summary_writer.add_scalar(f'Accuracy at IOU: {iou_threshold}', accuracy, epoch)
 
         print("At IOU ", iou_threshold)
         print("Precision: ", precision)
@@ -205,7 +189,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
         print("Accuracy: ", accuracy)
         print("---------------------")
 
-    save_model(model, optimizer, f'./saved_models/{datetime.now()}')
+    save_model(model, optimizer, f'./saved_models/{datetime.now()}-epoch{epoch}')
 
     return None
     
