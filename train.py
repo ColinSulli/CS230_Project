@@ -154,13 +154,13 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.5)
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.25)
 
             #print("FILTERED PREDICTION")
             #print(filtered_predictions)
 
             # Perform non max suppression
-            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
+            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.3)
 
             #print("FILTERED")
             #print(filtered_predictions)
