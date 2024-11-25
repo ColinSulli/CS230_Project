@@ -5,6 +5,8 @@ from torch.utils.data import Dataset
 import pydicom
 from torchvision import transforms
 from PIL import Image
+from torchvision.transforms import functional as F
+
 class PneumoniaDataset(Dataset):
     def __init__(self, image_dir, annotations, patient_ids,transforms=None):
         self.image_dir = image_dir
@@ -20,7 +22,10 @@ class PneumoniaDataset(Dataset):
         img_path = os.path.join(self.image_dir, patient_id + '.dcm')
         dicom = pydicom.dcmread(img_path)
         image = dicom.pixel_array
+        #image = resize_image(image, target_size=800)
         image = Image.fromarray(image).convert('L')
+
+        print(image)
 
         # Get annotations for this image
         records = self.annotations[self.annotations['patientId'] == patient_id]
@@ -69,6 +74,16 @@ class PneumoniaDataset(Dataset):
         #print("________________")
 
         return image, target
+
+def resize_image(image, target_size=800):
+    original_size = image.size  # (width, height)
+
+    print(original_size)
+
+    scale = target_size / min(original_size)
+    new_size = (int(original_size[0] * scale), int(original_size[1] * scale))
+    resized_image = F.resize(image, new_size)
+    return resized_image
 
 def get_transforms(train):
     transforms_list = [transforms.ToTensor()]
