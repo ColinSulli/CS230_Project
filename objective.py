@@ -22,7 +22,8 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
             if not skip_train:
                 train(model, optimizer, train_loader, device, epoch, summary_writer, train_ids)
 
-            coco_evaluator = evaluate(model, validation_loader, valid_gt, device, validation_ids, optimizer)
+            coco_evaluator = evaluate(
+                model, validation_loader, valid_gt, device, validation_ids, optimizer, summary_writer, epoch)
             
             '''stats = coco_evaluator.coco_eval['bbox'].stats
             val_map = stats[0]
