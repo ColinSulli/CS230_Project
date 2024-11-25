@@ -18,7 +18,7 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
         best_val_map=0.0
         torch.autograd.set_detect_anomaly(True)
         val_maps = []
-        skip_train = True
+        skip_train = False
         for epoch in range(epochs):
             # set up tensorboard writer, file saves as current date/time
             if not skip_train:

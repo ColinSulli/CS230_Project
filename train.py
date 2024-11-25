@@ -50,8 +50,8 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
         i += 1
 
-        if i == 10:
-            break
+        #if i == 10:
+        #    break
 
 
 def calculate_iou(box_1, box_2):
@@ -145,7 +145,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        if index == 1000:
+        if index == 1500:
             break
 
         images = list(img.to(device) for img in images)
