@@ -160,7 +160,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             #print(filtered_predictions)
 
             # Perform non max suppression
-            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
+            #filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
 
             #print("FILTERED")
             #print(filtered_predictions)
