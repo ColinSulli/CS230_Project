@@ -50,8 +50,8 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
         i += 1
 
-        #if i == 10:
-        #    break
+        if i == 1000:
+            break
 
 
 def calculate_iou(box_1, box_2):
