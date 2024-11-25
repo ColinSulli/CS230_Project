@@ -5,24 +5,23 @@ from dataloader import get_dataloaders
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
+from model import get_object_detection_model
 
 def objective(trial, train_loader, validation_loader, device,model, valid_gt,epochs, train_ids, validation_ids):
     # Hyperparameter suggestions
     try:
-        lr = trial.suggest_float('lr', 0.0001, 0.0001, log=True)
-        momentum = trial.suggest_float('momentum', 0.9323368245702841, 0.9323368245702841, log=True)
-        weight_decay = trial.suggest_float('weight_decay', 0.0001298489873419346, 0.0001298489873419346, log=True)
-        
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
+        model = get_object_detection_model(2)
+        model.to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.00084232, momentum=0.9003619, weight_decay=0.00001106)
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
-        best_val_map=0.0
+        best_val_map = 0.0
         torch.autograd.set_detect_anomaly(True)
         val_maps = []
         skip_train = False
+        summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
         for epoch in range(epochs):
             # set up tensorboard writer, file saves as current date/time
             if not skip_train:
-                summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
                 train(model, optimizer, train_loader, device, epoch, summary_writer, train_ids)
                 lr_scheduler.step()
             coco_evaluator = evaluate(model, validation_loader, valid_gt, device, validation_ids, optimizer)
