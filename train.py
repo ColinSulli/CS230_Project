@@ -157,7 +157,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             #print(prediction)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.75)
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.5)
 
             # Perform non max suppression
             filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
