@@ -37,7 +37,7 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
         optimizer.step()
 
         if i != 0 and i % 10 == 0:
-            summary_writer.add_scalar('train_loss', losses.item(), epoch * len(images) + i)
+            summary_writer.add_scalar('train_loss', losses.item(), epoch * len(train_loader) + i)
         i += 1
 
         #if i == 1000:
@@ -135,16 +135,16 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        if index == 1500:
-            break
+        #if index == 300:
+        #    break
 
         images = list(img.to(device) for img in images)
-        with torch.no_grad():
+        with (torch.no_grad()):
             # get predictions
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.4)
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.7)
 
             # Perform non max suppression
             filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
@@ -171,23 +171,27 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
                     false_negative[i] += 1
 
                 # binary accuracy
-                if targets[0]['boxes'].numel() == filtered_predictions[0]['boxes'].numel():
+                #print(targets)
+                #print(filtered_predictions)
+                if ((targets[0]['boxes'].numel() == 0 and filtered_predictions[0]['boxes'].numel() == 0) or
+                        (targets[0]['boxes'].numel() > 0 and filtered_predictions[0]['boxes'].numel() > 0)):
                     correct[i] += 1
 
     for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
         precision, recall, accuracy = calculate_precision_recall_correct(
-            total_positive[i], false_positive[i], false_negative[i], correct[i], 1500)
+            total_positive[i], false_positive[i], false_negative[i], correct[i], len(valid_loader))
 
         # log data in tensorboard
         summary_writer.add_scalar(f'Precision at IOU: {iou_threshold}', precision, epoch)
         summary_writer.add_scalar(f'Recall at IOU: {iou_threshold}', recall, epoch)
-        summary_writer.add_scalar(f'Accuracy at IOU: {iou_threshold}', accuracy, epoch)
 
         print("At IOU ", iou_threshold)
         print("Precision: ", precision)
         print("Recall: ", recall)
-        print("Accuracy: ", accuracy)
-        print("---------------------")
+
+    summary_writer.add_scalar(f'Binary Accuracy: ', correct[0] / len(valid_loader), epoch)
+    print("Binary Accuracy: ", correct[0] / len(valid_loader))
+    print("---------------------")
 
     save_model(model, optimizer, f'./saved_models/{datetime.now()}-epoch{epoch}')
 
