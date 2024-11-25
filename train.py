@@ -147,7 +147,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
             filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.6)
 
             # Perform non max suppression
-            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.4)
+            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.2)
 
             for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
                 matched_idx = set()
@@ -171,8 +171,6 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
                     false_negative[i] += 1
 
                 # binary accuracy
-                #print(targets)
-                #print(filtered_predictions)
                 if ((targets[0]['boxes'].numel() == 0 and filtered_predictions[0]['boxes'].numel() == 0) or
                         (targets[0]['boxes'].numel() > 0 and filtered_predictions[0]['boxes'].numel() > 0)):
                     correct[i] += 1
