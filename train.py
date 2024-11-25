@@ -154,7 +154,7 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer):
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.4)
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.5)
 
             #print("FILTERED PREDICTION")
             #print(filtered_predictions)
