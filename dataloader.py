@@ -121,6 +121,6 @@ def get_dataloaders(image_dir,train_ids,validation_ids,annotations):
 	    transforms=get_transforms(train=False)
 	)
 	val_loader = torch.utils.data.DataLoader(
-	    val_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+	    val_dataset, batch_size=1, shuffle=False, collate_fn=lambda x: tuple(zip(*x))
 	)
 	return train_loader,val_loader

@@ -68,7 +68,7 @@ def objective_setup(trail):
 
     ######initialize model#############
     model = None
-    load_saved = True
+    load_saved = False
     if load_saved:
         model = load_model("./saved_models/2024-11-25 20:02:13.764967-epoch2")
     else:
