@@ -1,4 +1,6 @@
 from torchvision import transforms
+import faulthandler
+faulthandler.enable()
 import os
 import torch
 from torch.utils.data import Dataset
@@ -62,18 +64,31 @@ class PneumoniaDataset(Dataset):
         target['iscrowd'] = iscrowd
 
         if self.transforms:
+            print("wffff")
+            print(self.transforms)
+            print(image)
             image = self.transforms(image)
+            print(image)
         return image, target
-def get_init_norm_transform():
+def get_init_norm_transform(device):
+
+    print("H")
+
     transforms_list = [transforms.ToTensor()]
     return transforms.Compose(transforms_list)
 
 def get_norm_transform(mean_value,std_value,device):
+
+    print("COLI")
+
+
     transforms_list=[transforms.ToTensor()]
     transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
     return transforms.Compose(transforms_list)
 
 def get_transforms(train):
+
+    print("H1")
     transforms_list = [transforms.ToTensor()]
     if train:
         transforms_list.append(transforms.RandomHorizontalFlip(0.5))
@@ -81,12 +96,12 @@ def get_transforms(train):
         transforms_list.append(transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
     return transforms.Compose(transforms_list)
 
-def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations):
+def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations,device):
     train_dataset = PneumoniaDataset(
         image_dir=image_dir,
         annotations=annotations,
         patient_ids=train_ids,
-        transforms=get_init_norm_transform()
+        transforms=get_init_norm_transform(device)
     )
 
     train_loader = torch.utils.data.DataLoader(
@@ -94,6 +109,9 @@ def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations)
     )
     return train_loader
 def get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean_value,std_value,device):
+
+    print("HI")
+
     norm_transforms=get_norm_transform(mean_value,std_value,device)
     train_dataset = PneumoniaDataset(
         image_dir=image_dir,

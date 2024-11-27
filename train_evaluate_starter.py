@@ -15,11 +15,11 @@ import torchvision
 from model import get_object_detection_model
 from utils import convert_evalset_coco
 
-def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations):
+def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,device):
 
     print(len(train_ids))
 
-    t_loader = get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotations)
+    t_loader = get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotations, device)
     channel_sum = torch.zeros(3)
     channel_squared_sum = torch.zeros(3)
     num_batches = 0
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         device = torch.device('cuda')
     print('Running on device', device)
     train_ids, validation_ids, annotations = data_init(annotations_file)
-    mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations)
+    mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, annotations, mean, std,
                                                            device)
     coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
