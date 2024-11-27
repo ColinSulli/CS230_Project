@@ -3,7 +3,7 @@ from objective import objective
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from dataloader import get_dataloaders
+from dataloader import get_dataloaders_with_norm
 import torch
 import torchvision
 from model import get_object_detection_model

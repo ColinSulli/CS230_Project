@@ -143,8 +143,6 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
             # get predictions
             prediction = model(images)
 
-            print(prediction)
-
             # filter out bad scores
             filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.6)
 
@@ -196,4 +194,3 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
     save_model(model, optimizer, f'./saved_models/{datetime.now()}-epoch{epoch}')
 
     return None
-    
