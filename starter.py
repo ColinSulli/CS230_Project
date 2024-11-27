@@ -68,9 +68,9 @@ def objective_setup(trail):
 
     ######initialize model#############
     model = None
-    load_saved = False
+    load_saved = True
     if load_saved:
-        model = load_model("./saved_models/2024-11-25 20:02:13.764967-epoch2")
+        model = load_model("./saved_models/2024-11-26 01:52:22.117353-epoch0")
     else:
         model = get_object_detection_model(2)
     model.to(device)

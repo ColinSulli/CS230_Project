@@ -135,13 +135,15 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        #if index == 300:
-        #    break
+        if index == 300:
+            break
 
         images = list(img.to(device) for img in images)
         with (torch.no_grad()):
             # get predictions
             prediction = model(images)
+
+            print(prediction)
 
             # filter out bad scores
             filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.6)
