@@ -18,7 +18,9 @@ def replace_relu_with_inplace_false(module):
             setattr(module, name, nn.ReLU(inplace=False))
         else:
             replace_relu_with_inplace_false(child)
-def train(model, optimizer, train_loader, device, epoch, summary_writer, train_ids):
+
+
+def train(model, optimizer, train_loader, device, epoch, summary_writer):
     model.train()
     replace_relu_with_inplace_false(model)
     i = 0
@@ -40,14 +42,11 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer, train_i
             summary_writer.add_scalar('train_loss', losses.item(), epoch * len(train_loader) + i)
         i += 1
 
-        #if i == 1000:
+        #if i == 10:
         #    break
 
 
 def calculate_iou(box_1, box_2):
-
-    #print(box_1)
-    #print(box_2)
     # determine the (x, y)-coordinates of the intersection rectangle
     xA = max(box_1[0], box_2[0])
     yA = max(box_1[1], box_2[1])
@@ -59,8 +58,6 @@ def calculate_iou(box_1, box_2):
     if interArea == 0:
         return 0
 
-    #print(interArea)
-    #exit()
     # compute the area of both the prediction and ground-truth
     # rectangles
     boxAArea = abs((box_1[2] - box_1[0]) * (box_1[3] - box_1[1]))
@@ -121,7 +118,8 @@ def calculate_precision_recall_correct(
 
     return precision, recall, accuracy
 
-def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, summary_writer, epoch):
+
+def evaluate(model, valid_loader, device, validation_ids, optimizer, summary_writer, epoch):
     model.eval()
     iou_threshold = 0.5
 
@@ -135,8 +133,8 @@ def evaluate(model, valid_loader, valid_gt, device, validation_ids, optimizer, s
     for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
         index += 1
 
-        if index == 300:
-            break
+        #if index == 10:
+        #    break
 
         images = list(img.to(device) for img in images)
         with (torch.no_grad()):

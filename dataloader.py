@@ -7,12 +7,14 @@ from torch.utils.data import Dataset
 import pydicom
 from torchvision import transforms
 from PIL import Image
+from torchvision.transforms import functional as F
 class PneumoniaDataset(Dataset):
-    def __init__(self, image_dir, annotations, patient_ids,transforms=None):
+    def __init__(self, image_dir, annotations, patient_ids,transforms=None, device=None):
         self.image_dir = image_dir
         self.annotations = annotations
         self.patient_ids = patient_ids
         self.transforms = transforms
+        self.device = device
 
     def __len__(self):
         return len(self.patient_ids)
@@ -23,6 +25,11 @@ class PneumoniaDataset(Dataset):
         dicom = pydicom.dcmread(img_path)
         image = dicom.pixel_array
         image = Image.fromarray(image).convert('RGB')
+        original_size = image.size
+        new_size = None
+        if self.device == torch.device('cpu') or self.device == torch.device('mps'):
+            image = resize_image(image, target_size=180)
+            new_size = image.size
 
         # Get annotations for this image
         records = self.annotations[self.annotations['patientId'] == patient_id]
@@ -40,7 +47,10 @@ class PneumoniaDataset(Dataset):
                     y = row['y']
                     width = row['width']
                     height = row['height']
-                    boxes.append([x, y, x + width, y + height])
+                    box = [x, y, x + width, y + height]
+                    if self.device == torch.device('cpu') or self.device == torch.device('mps'):
+                        box = resize_boxes(box, original_size, new_size)
+                    boxes.append(box)
                     labels.append(1)
 
             # Convert to tensors
@@ -64,31 +74,36 @@ class PneumoniaDataset(Dataset):
         target['iscrowd'] = iscrowd
 
         if self.transforms:
-            print("wffff")
-            print(self.transforms)
-            print(image)
             image = self.transforms(image)
-            print(image)
         return image, target
-def get_init_norm_transform(device):
 
-    print("H")
+def resize_image(image, target_size=800):
+    original_size = image.size  # (width, height)
+    scale = target_size / min(original_size)
+    new_size = (int(original_size[0] * scale), int(original_size[1] * scale))
+    resized_image = F.resize(image, new_size)
 
+    return resized_image
+
+def resize_boxes(boxes, original_size, new_size):
+    scale_x = new_size[0] / original_size[0]
+    scale_y = new_size[1] / original_size[1]
+    boxes[0] *= scale_x
+    boxes[2] *= scale_x
+    boxes[1] *= scale_y
+    boxes[3] *= scale_y
+    return boxes
+
+def get_init_norm_transform():
     transforms_list = [transforms.ToTensor()]
     return transforms.Compose(transforms_list)
 
 def get_norm_transform(mean_value,std_value,device):
-
-    print("COLI")
-
-
     transforms_list=[transforms.ToTensor()]
     transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
     return transforms.Compose(transforms_list)
 
 def get_transforms(train):
-
-    print("H1")
     transforms_list = [transforms.ToTensor()]
     if train:
         transforms_list.append(transforms.RandomHorizontalFlip(0.5))
@@ -101,35 +116,35 @@ def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations,
         image_dir=image_dir,
         annotations=annotations,
         patient_ids=train_ids,
-        transforms=get_init_norm_transform(device)
+        transforms=get_init_norm_transform(),
+        device=device
     )
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=1, num_workers=0, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+        train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
     )
     return train_loader
 def get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean_value,std_value,device):
-
-    print("HI")
-
     norm_transforms=get_norm_transform(mean_value,std_value,device)
     train_dataset = PneumoniaDataset(
         image_dir=image_dir,
         annotations=annotations,
         patient_ids=train_ids,
-        transforms=norm_transforms
+        transforms=norm_transforms,
+        device=device
     )
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=1, num_workers=0, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+        train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
     )
     val_dataset = PneumoniaDataset(
         image_dir=image_dir,
         annotations=annotations,
         patient_ids=validation_ids,
-        transforms=norm_transforms
+        transforms=norm_transforms,
+        device=device
     )
     val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=1, num_workers=0, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+        val_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
     )
     return train_loader, val_loader

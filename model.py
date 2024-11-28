@@ -34,8 +34,8 @@ class GIouRoIHeads(RoIHeads):
         return classification_loss,gio_loss
 
 def get_object_detection_model_giou(num_classes):
-    backbone=resnet_fpn_backbone('resnet50',pretrained=True)
-    model=FasterRCNN(backbone,num_classes=2)
+    backbone=resnet_fpn_backbone('resnet50', pretrained=True)
+    model=FasterRCNN(backbone, num_classes=2)
     model.roi_heads = GIouRoIHeads(
         box_roi_pool=model.roi_heads.box_roi_pool,
         box_head=model.roi_heads.box_head,

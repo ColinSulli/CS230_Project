@@ -9,11 +9,12 @@ from dataloader import get_train_dataloader_no_norm
 from train import train, evaluate
 from model import get_object_detection_model_restnet101
 from model import get_object_detection_model_giou
-
+from datetime import datetime
 import torch
 import torchvision
 from model import get_object_detection_model
 from utils import convert_evalset_coco
+from torch.utils.tensorboard import SummaryWriter
 
 def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,device):
 
@@ -24,16 +25,8 @@ def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,devic
     channel_squared_sum = torch.zeros(3)
     num_batches = 0
 
-    print(t_loader)
-
     for b in t_loader:
-
-        print("JH")
-
         images, targets = b
-
-        print("HERE")
-
         if isinstance(images, (list, tuple)):
             images = torch.stack(images, dim=0)
         elif isinstance(images, torch.Tensor):
@@ -92,7 +85,7 @@ def data_init(annotations_file):
 
     return patient_ids_train, patient_ids_validation, labels
 
-def train_and_evaluate(train_data_loader,val_loader,device,epochs,valid_gt) :
+def train_and_evaluate(train_data_loader,val_loader,device,epochs) :
     model=get_object_detection_model_giou(2)
     model.to(device)
     print('model initialized')
@@ -102,26 +95,28 @@ def train_and_evaluate(train_data_loader,val_loader,device,epochs,valid_gt) :
     best_val_map=0.0
     torch.autograd.set_detect_anomaly(True)
     val_maps = []
+    summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
     for epoch in range(epochs):
         print('runnng epoch:',epoch)
-        train(model, optimizer, train_data_loader, device, epoch)
+        train(model, optimizer, train_data_loader, device, epoch, summary_writer)
         lr_scheduler.step()
         try:
-            coco_evaluator = evaluate(model, val_loader,valid_gt, device=device)
+            evaluate(model, valid_loader, device, validation_ids, optimizer, summary_writer, epoch)
+            #coco_evaluator = evaluate(model, val_loader,valid_gt, device=device)
         except Exception as e:
             print(f"An exception occurred: {e}")
             raise e
-        stats = coco_evaluator.coco_eval['bbox'].stats
-        val_map = stats[0]
-        val_maps.append(val_map)
+        #stats = coco_evaluator.coco_eval['bbox'].stats
+        #val_map = stats[0]
+        #val_maps.append(val_map)
 
-    e = range(1, epochs + 1)
+    '''e = range(1, epochs + 1)
     plt.plot(e, val_maps, label='Validation mAP')
     plt.xlabel('Epoch')
     plt.ylabel('mAP')
     plt.title('Validation mAP over Epochs')
     plt.legend()
-    plt.show()
+    plt.show()'''
 if __name__ == "__main__":
     annotations_file = 'stage_2_train_labels.csv'
     image_dir = './stage_2_train_images'
@@ -129,10 +124,13 @@ if __name__ == "__main__":
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
+    #elif torch.backends.mps.is_available():
+    #    device = torch.device('mps')
+
     print('Running on device', device)
     train_ids, validation_ids, annotations = data_init(annotations_file)
     mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, annotations, mean, std,
                                                            device)
-    coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
-    train_and_evaluate(train_loader, valid_loader, device, num_epochs, coco_format_validation_ds)
+    #coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
+    train_and_evaluate(train_loader, valid_loader, device, num_epochs)
