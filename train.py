@@ -119,7 +119,7 @@ def calculate_precision_recall_correct(
     return precision, recall, accuracy
 
 
-def evaluate(model, valid_loader, device, validation_ids, optimizer, summary_writer, epoch):
+def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch):
     model.eval()
     iou_threshold = 0.5
 

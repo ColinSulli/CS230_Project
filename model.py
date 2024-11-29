@@ -30,8 +30,8 @@ class GIouRoIHeads(RoIHeads):
         device = regression_targets.device
         gt_boxes = self.box_coder.decode(torch.zeros_like(box_regression), [regression_targets])
 
-        gio_loss=generalized_box_iou_loss(pred_boxes[0],gt_boxes[0],reduction='mean')
-        return classification_loss,gio_loss
+        gio_loss = generalized_box_iou_loss(pred_boxes[0], gt_boxes[0], reduction='mean')
+        return classification_loss, gio_loss
 
 def get_object_detection_model_giou(num_classes):
     backbone=resnet_fpn_backbone('resnet50', pretrained=True)
@@ -76,6 +76,8 @@ def get_object_detection_model(num_classes):
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
     return model
+
+
 def get_object_detection_model_fl(num_classes):
     backbone=resnet_fpn_backbone('resnet50',pretrained=True)
     #model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)

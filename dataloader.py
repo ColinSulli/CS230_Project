@@ -124,7 +124,7 @@ def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations,
         train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
     )
     return train_loader
-def get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean_value,std_value,device):
+def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, annotations, mean_value, std_value,device):
     norm_transforms=get_norm_transform(mean_value,std_value,device)
     train_dataset = PneumoniaDataset(
         image_dir=image_dir,
@@ -133,10 +133,10 @@ def get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mea
         transforms=norm_transforms,
         device=device
     )
-
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
     )
+
     val_dataset = PneumoniaDataset(
         image_dir=image_dir,
         annotations=annotations,
@@ -147,4 +147,15 @@ def get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mea
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
     )
-    return train_loader, val_loader
+
+    test_dataset = PneumoniaDataset(
+        image_dir=image_dir,
+        annotations=annotations,
+        patient_ids=test_ids,
+        transforms=norm_transforms,
+        device=device
+    )
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
+    )
+    return train_loader, val_loader, test_loader
