@@ -40,6 +40,9 @@ class PneumoniaDataset(Dataset):
             # No pneumonia in this image
             boxes = torch.zeros((0, 4), dtype=torch.float32)
             labels = torch.zeros((0,), dtype=torch.int64)
+            #print(f"Negative Sample - Boxes: {boxes}, Labels: {labels}")
+            assert boxes.numel() == 0, f"Boxes for image {idx} are not empty: {boxes}"
+            assert labels.numel() == 0, f"Labels for image {idx} are not empty: {labels}"
         else:
             for _, row in records.iterrows():
                 if row['Target'] == 1:
@@ -54,13 +57,8 @@ class PneumoniaDataset(Dataset):
                     labels.append(1)
 
             # Convert to tensors
-            boxes = torch.as_tensor(boxes, dtype=torch.float32)
-            labels = torch.as_tensor(labels, dtype=torch.int64)
-
-        if boxes.numel() == 0:
-            boxes = torch.zeros((0, 4), dtype=torch.float32)
-        if labels.numel() == 0:
-            labels = torch.zeros((0,), dtype=torch.int64)
+            boxes = torch.as_tensor(boxes, dtype=torch.float32) if len(boxes) > 0 else torch.zeros((0, 4), dtype=torch.float32)
+            labels = torch.as_tensor(labels, dtype=torch.int64) if len(labels) > 0 else torch.zeros((0,), dtype=torch.int64)
 
         target = {}
         target['boxes'] = boxes
@@ -103,6 +101,7 @@ def get_norm_transform(mean_value,std_value,device):
     transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
     return transforms.Compose(transforms_list)
 
+
 def get_transforms(train):
     transforms_list = [transforms.ToTensor()]
     if train:
@@ -110,6 +109,7 @@ def get_transforms(train):
         transforms_list.append(transforms.RandomRotation(10))
         transforms_list.append(transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]))
     return transforms.Compose(transforms_list)
+
 
 def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations,device):
     train_dataset = PneumoniaDataset(
@@ -121,41 +121,41 @@ def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations,
     )
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
-    )
+        train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
     return train_loader
-def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, annotations, mean_value, std_value,device):
-    norm_transforms=get_norm_transform(mean_value,std_value,device)
-    train_dataset = PneumoniaDataset(
-        image_dir=image_dir,
-        annotations=annotations,
-        patient_ids=train_ids,
-        transforms=norm_transforms,
-        device=device
-    )
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=4, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
-    )
 
-    val_dataset = PneumoniaDataset(
-        image_dir=image_dir,
-        annotations=annotations,
-        patient_ids=validation_ids,
-        transforms=norm_transforms,
-        device=device
-    )
-    val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
-    )
 
-    test_dataset = PneumoniaDataset(
-        image_dir=image_dir,
-        annotations=annotations,
-        patient_ids=test_ids,
-        transforms=norm_transforms,
-        device=device
-    )
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=1, shuffle=True, collate_fn=lambda x: tuple(zip(*x))
-    )
+def custom_collate_fn(batch):
+    images, targets = zip(*batch)
+    for idx, target in enumerate(targets):
+        # Ensure empty tensors for negative samples
+        if target['boxes'].numel() == 0:
+            target['boxes'] = torch.zeros((0, 4), dtype=torch.float32)
+        if target['labels'].numel() == 0:
+            target['labels'] = torch.zeros((0,), dtype=torch.int64)
+    return list(images), list(targets)
+
+
+def get_train_loader_with_augmentation(mean_value,std_value):
+    transforms_list = [transforms.ToTensor()]
+    transforms_list.append(transforms.RandomHorizontalFlip(0.5))
+    transforms_list.append(transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)))
+    transforms_list.append(transforms.RandomRotation(degrees=15))
+    transforms_list.append(transforms.RandomVerticalFlip(0.5))
+    transforms_list.append(transforms.RandomResizedCrop(size=(1024, 1024), scale=(0.8, 1.0)))
+    transforms_list.append(transforms.ColorJitter(brightness=0.2, contrast=0.2))
+    transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
+    return transforms.Compose(transforms_list)
+
+
+def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, annotations, mean_value, std_value, device, is_train_augmented):
+    norm_transforms = get_norm_transform(mean_value, std_value, device)
+    train_transform = get_train_loader_with_augmentation(mean_value, std_value)
+    train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=train_ids, transforms=train_transform)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
+    val_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=validation_ids, transforms=norm_transforms)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
+    test_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=test_ids, transforms=norm_transforms, device=device)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
+
     return train_loader, val_loader, test_loader

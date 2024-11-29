@@ -225,7 +225,7 @@ if __name__ == "__main__":
     train_ids, validation_ids, test_ids, annotations = new_data_init(annotations_file, device)
     mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader, test_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids,
-                                                                        annotations, mean, std, device)
+                                                                        annotations, mean, std, device, is_train_augmented=False)
 
     #coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
     train_and_evaluate(train_loader, valid_loader, test_loader, device, num_epochs)

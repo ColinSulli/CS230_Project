@@ -10,6 +10,8 @@ import torch.nn.functional as F
 from torchvision.ops import sigmoid_focal_loss
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.roi_heads import RoIHeads
+from torchvision.models.detection import fcos_resnet50_fpn
+from torchvision.models.detection.fcos import FCOSClassificationHead
 class GIouRoIHeads(RoIHeads):
     def __init__(self,*args,**kwargs):
         super(GIouRoIHeads,self).__init__(*args,**kwargs)
@@ -34,8 +36,12 @@ class GIouRoIHeads(RoIHeads):
         return classification_loss, gio_loss
 
 def get_object_detection_model_giou(num_classes):
-    backbone=resnet_fpn_backbone('resnet50', pretrained=True)
-    model=FasterRCNN(backbone, num_classes=2)
+    backbone=resnet_fpn_backbone('resnet50',pretrained=True)
+    anchor_sizes = ((32,),(64,),(128,),( 256,), (512,))  
+    aspect_ratios = ((0.5, 0.75, 1.0, 1.5, 2.0),(0.5, 0.75, 1.0, 1.5, 2.0),(0.5, 0.75, 1.0, 1.5, 2.0),(0.5, 0.75, 1.0, 1.5, 2.0),(0.5, 0.75, 1.0, 1.5, 2.0))
+
+    anchor_generator = AnchorGenerator(sizes=anchor_sizes, aspect_ratios=aspect_ratios)
+    model=FasterRCNN(backbone,rpn_anchor_generator=anchor_generator,num_classes=2)
     model.roi_heads = GIouRoIHeads(
         box_roi_pool=model.roi_heads.box_roi_pool,
         box_head=model.roi_heads.box_head,
@@ -78,11 +84,13 @@ def get_object_detection_model(num_classes):
     return model
 
 
-def get_object_detection_model_fl(num_classes):
-    backbone=resnet_fpn_backbone('resnet50',pretrained=True)
-    #model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-    custom_model = FRCNN_FocalLoss(backbone, num_classes=2)
-    #custom_model.to(device)
-    in_features = custom_model.roi_heads.box_predictor.cls_score.in_features
-    custom_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-    return custom_model
+def get_object_detection_model_fcos(num_classes):
+    model = fcos_resnet50_fpn(pretrained=True)
+    in_channels = model.head.classification_head.conv[0].in_channels
+    num_anchors = model.head.classification_head.num_anchors
+
+    model.head.classification_head = FCOSClassificationHead(
+        in_channels=in_channels,
+        num_classes=num_classes,
+        num_anchors=num_anchors)
+    return model
