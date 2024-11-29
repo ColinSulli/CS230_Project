@@ -15,6 +15,7 @@ import torchvision
 from model import get_object_detection_model
 from utils import convert_evalset_coco
 from torch.utils.tensorboard import SummaryWriter
+from train import load_model
 
 def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,device):
 
@@ -86,7 +87,12 @@ def data_init(annotations_file):
     return patient_ids_train, patient_ids_validation, labels
 
 def train_and_evaluate(train_data_loader,val_loader,device,epochs) :
-    model=get_object_detection_model_giou(2)
+    model = None
+    load_saved = True
+    if load_saved:
+        model = load_model("./saved_models/2024-11-28 04:53:34.928489-epoch0")
+    else:
+        model=get_object_detection_model_giou(2)
     model.to(device)
     print('model initialized')
     #optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9323368245702841, weight_decay=0.0001298489873419346)
@@ -96,10 +102,12 @@ def train_and_evaluate(train_data_loader,val_loader,device,epochs) :
     torch.autograd.set_detect_anomaly(True)
     val_maps = []
     summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
+    skip_training = True
     for epoch in range(epochs):
         print('runnng epoch:',epoch)
-        train(model, optimizer, train_data_loader, device, epoch, summary_writer)
-        lr_scheduler.step()
+        if skip_training:
+            train(model, optimizer, train_data_loader, device, epoch, summary_writer)
+            lr_scheduler.step()
         try:
             evaluate(model, valid_loader, device, validation_ids, optimizer, summary_writer, epoch)
             #coco_evaluator = evaluate(model, val_loader,valid_gt, device=device)
@@ -132,5 +140,6 @@ if __name__ == "__main__":
     mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, annotations, mean, std,
                                                            device)
+
     #coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
     train_and_evaluate(train_loader, valid_loader, device, num_epochs)
