@@ -82,14 +82,6 @@ def get_object_detection_model(num_classes):
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
     return model
-def get_object_detection_model_fl(num_classes):
-    backbone=resnet_fpn_backbone('resnet50',pretrained=True)
-    #model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-    custom_model = FRCNN_FocalLoss(backbone, num_classes=2)
-    #custom_model.to(device)
-    in_features = custom_model.roi_heads.box_predictor.cls_score.in_features
-    custom_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-    return custom_model
 def get_object_detection_model_fcos(num_classes):
     model = fcos_resnet50_fpn(pretrained=True)
     in_channels = model.head.classification_head.conv[0].in_channels
