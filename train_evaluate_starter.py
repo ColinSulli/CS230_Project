@@ -86,6 +86,14 @@ def data_init(annotations_file):
 
     return patient_ids_train, patient_ids_validation, labels
 
+
+def new_data_init(annotations_file):
+    # Setting up data
+    labels = pd.read_csv(annotations_file)
+
+
+
+
 def train_and_evaluate(train_data_loader,val_loader,device,epochs) :
     model = None
     load_saved = True
@@ -102,10 +110,9 @@ def train_and_evaluate(train_data_loader,val_loader,device,epochs) :
     torch.autograd.set_detect_anomaly(True)
     val_maps = []
     summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
-    skip_training = True
     for epoch in range(epochs):
         print('runnng epoch:',epoch)
-        if skip_training:
+        if not load_saved:
             train(model, optimizer, train_data_loader, device, epoch, summary_writer)
             lr_scheduler.step()
         try:
