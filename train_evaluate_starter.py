@@ -148,8 +148,11 @@ def new_data_init(annotations_file, device):
 
     # to make testing on PC faster
     if device == torch.device('cpu'):
-        positive_patient_ids = positive_patient_ids[:5]
-        negative_patient_ids = negative_patient_ids[:20]
+        positive_patient_ids = positive_patient_ids[:1000]
+        negative_patient_ids = negative_patient_ids[:3000]
+
+    positive_patient_ids = positive_patient_ids[:1000]
+    negative_patient_ids = negative_patient_ids[:3000]
 
     # positive IDs
     pos_train = positive_patient_ids[:int(0.8 * len(positive_patient_ids))]

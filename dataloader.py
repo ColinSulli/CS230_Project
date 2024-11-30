@@ -10,11 +10,12 @@ import numpy as np
 
 
 class PneumoniaDataset(Dataset):
-    def __init__(self, image_dir, annotations, patient_ids, trnfrms):
+    def __init__(self, image_dir, annotations, patient_ids, trnfrms, fraction):
         self.image_dir = image_dir
         self.annotations = annotations
         self.patient_ids = patient_ids
         self.trnfrms = trnfrms
+        self.fraction = fraction
 
     def __len__(self):
         return len(self.patient_ids)
@@ -50,7 +51,13 @@ class PneumoniaDataset(Dataset):
                     labels.append(1)
 
         target = {}
-        transformed = self.trnfrms(image=image, bboxes=boxes, labels=labels)
+        transformed = get_init_norm_transform()(image=image, bboxes=boxes, labels=labels)
+        if self.fraction != 1:
+            r = np.random.randint(0, 1)
+            if r < self.fraction:
+                index = np.random.randint(0, len(self.trnfrms) - 1)
+                transformed = self.trnfrms[index](image=image, bboxes=boxes, labels=labels)
+
         image = transformed['image']
         boxes = transformed['bboxes']
         labels = transformed['labels']
@@ -105,6 +112,7 @@ def get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotatio
             annotations=annotations,
             patient_ids=s,
             trnfrms=get_init_norm_transform(),
+            fraction=1
         )
         train_loader_sub = torch.utils.data.DataLoader(
             train_dataset_sub, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
@@ -129,38 +137,42 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
     # train_transform=get_train_loader_with_augmentation(mean_value,std_value)
     # train_transform=get_train_transform()
     # valid_transform=get_valid_transform()
-    train_transform = get_init_norm_transform()
+    data_aug_frac = 1
     if is_train_augmented:
-        train_flip_vertical = A.Compose([
-            A.VerticalFlip(p=0.5), ToTensorV2()],
-            bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-        train_flip_horiontal = A.Compose([
-            A.HorizontalFlip(p=0.5), ToTensorV2()],
-            bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-        train_blur = A.Compose([
-            A.GaussianBlur(blur_limit=(5, 9), sigma_limit=(0.1, 5), p=0.5)],
-            bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-        train_rotate = A.Compose([
-            A.Rotate(limit=15, p=0.5), ToTensorV2()],
-            bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-        train_crop = A.Compose([
-            A.RandomResizedCrop(height=1024, width=1024, scale=(0.8, 1.0), p=0.5), ToTensorV2()],
-            bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-        train_color = A.Compose([
-            A.ColorJitter(brightness=0.2, contrast=0.2, p=0.5), ToTensorV2()],
-            bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+        data_aug_frac = 0.5
+
+    train_flip_vertical = A.Compose([
+        A.VerticalFlip(p=0.5), ToTensorV2()],
+        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+    train_flip_horiontal = A.Compose([
+        A.HorizontalFlip(p=0.5), ToTensorV2()],
+        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+    train_blur = A.Compose([
+        A.GaussianBlur(blur_limit=(5, 9), sigma_limit=(0.1, 5), p=0.5), ToTensorV2()],
+        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+    train_rotate = A.Compose([
+        A.Rotate(limit=15, p=0.5), ToTensorV2()],
+        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+    train_crop = A.Compose([
+        A.RandomResizedCrop(height=1024, width=1024, scale=(0.8, 1.0), p=0.5), ToTensorV2()],
+        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+    train_color = A.Compose([
+        A.ColorJitter(brightness=0.2, contrast=0.2, p=0.5), ToTensorV2()],
+        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+
     # train_transform=get_train_loader_with_augmentation(mean_value,std_value)
     valid_transform = get_init_norm_transform()
 
     train_loader = []
     for sub in train_ids:
-        train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=sub, trnfrms=train_transform)
+        train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=sub,
+                                         trnfrms=[train_flip_vertical, train_flip_horiontal, train_blur, train_rotate, train_crop, train_color], fraction=data_aug_frac)
         train_loader_sub = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
         train_loader.append(train_loader_sub)
 
-    val_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=validation_ids, trnfrms=valid_transform)
+    val_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=validation_ids, trnfrms=valid_transform, fraction=1)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
-    test_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=test_ids,trnfrms=valid_transform)
+    test_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=test_ids,trnfrms=valid_transform, fraction=1)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
 
     return train_loader, val_loader, test_loader
