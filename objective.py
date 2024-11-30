@@ -27,12 +27,12 @@ def objective(trial, train_loader, validation_loader, device,model, valid_gt,epo
                 model, validation_loader, valid_gt, device, validation_ids, optimizer, summary_writer, epoch)
 
         e = range(1, epochs + 1)
-        plt.plot(e, val_maps, label='Validation mAP')
+        '''plt.plot(e, val_maps, label='Validation mAP')
         plt.xlabel('Epoch')
         plt.ylabel('mAP')
         plt.title('Validation mAP over Epochs')
         plt.legend()
-        plt.show()
+        plt.show()'''
     except Exception as e:
         print(f"An exception occurred: {e}")
     finally:

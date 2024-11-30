@@ -24,7 +24,14 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
     model.train()
     replace_relu_with_inplace_false(model)
     i = 0
-    for images, targets in tqdm(train_loader, desc=f'train', disable=False):
+
+    c_sub = epoch % 3
+    print(train_loader)
+    t_loader = train_loader[c_sub]
+    print(t_loader)
+
+
+    for images, targets in tqdm(t_loader, desc=f'train epoch: {epoch}', disable=False):
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -39,7 +46,7 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
         optimizer.step()
 
         if i != 0 and i % 10 == 0:
-            summary_writer.add_scalar('train_loss', losses.item(), epoch * len(train_loader) + i)
+            summary_writer.add_scalar('train_loss', losses.item(), epoch * len(t_loader) + i)
         i += 1
 
         #if i == 10:
@@ -130,7 +137,7 @@ def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch):
     ious = []
     average_ious = [[] for _ in range(7)]
     index = -1
-    for images, targets in tqdm(valid_loader, desc=f'eval', disable=False):
+    for images, targets in tqdm(valid_loader, desc=f'eval epoch {epoch}', disable=False):
         index += 1
 
         #if index == 10:
@@ -142,7 +149,7 @@ def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch):
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.87) #.83 is the best
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.85) #.83 is the best
 
             # Perform non max suppression
             filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.2)
@@ -178,14 +185,17 @@ def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch):
             total_positive[i], false_positive[i], false_negative[i], correct[i], len(valid_loader))
 
         # log data in tensorboard
-        summary_writer.add_scalar(f'Precision at IOU: {iou_threshold}', precision, epoch)
-        summary_writer.add_scalar(f'Recall at IOU: {iou_threshold}', recall, epoch)
+        if epoch != -1:
+            summary_writer.add_scalar(f'Precision at IOU: {iou_threshold}', precision, epoch)
+            summary_writer.add_scalar(f'Recall at IOU: {iou_threshold}', recall, epoch)
 
         print("At IOU ", iou_threshold)
         print("Precision: ", precision)
         print("Recall: ", recall)
 
-    summary_writer.add_scalar(f'Binary Accuracy: ', correct[0] / len(valid_loader), epoch)
+    if epoch != -1:
+        summary_writer.add_scalar(f'Binary Accuracy: ', correct[0] / len(valid_loader), epoch)
+
     print("Binary Accuracy: ", correct[0] / len(valid_loader))
     print("---------------------")
 

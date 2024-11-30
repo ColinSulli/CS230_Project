@@ -24,17 +24,18 @@ def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,devic
     channel_squared_sum = torch.zeros(3)
     num_batches = 0
 
-    for b in t_loader:
-        images, targets = b
-        if isinstance(images, (list, tuple)):
-            images = torch.stack(images, dim=0)
-        elif isinstance(images, torch.Tensor):
-            pass
-        else:
-            raise ValueError(f"Unexpected type for images: {type(images)}")
-        channel_sum += torch.mean(images, dim=(0, 2, 3))
-        channel_squared_sum += torch.mean(images ** 2, dim=(0, 2, 3))
-        num_batches += 1
+    for sub in t_loader:
+        for b in sub:
+            images, targets = b
+            if isinstance(images, (list, tuple)):
+                images = torch.stack(images, dim=0)
+            elif isinstance(images, torch.Tensor):
+                pass
+            else:
+                raise ValueError(f"Unexpected type for images: {type(images)}")
+            channel_sum += torch.mean(images, dim=(0, 2, 3))
+            channel_squared_sum += torch.mean(images ** 2, dim=(0, 2, 3))
+            num_batches += 1
     mean = channel_sum / num_batches
     std = (channel_squared_sum / num_batches - mean ** 2) ** 0.5
     return mean, std
@@ -147,8 +148,8 @@ def new_data_init(annotations_file, device):
 
     # to make testing on PC faster
     if device == torch.device('cpu'):
-        positive_patient_ids = positive_patient_ids[:4]
-        negative_patient_ids = negative_patient_ids[:12]
+        positive_patient_ids = positive_patient_ids[:5]
+        negative_patient_ids = negative_patient_ids[:20]
 
     # positive IDs
     pos_train = positive_patient_ids[:int(0.8 * len(positive_patient_ids))]
@@ -159,18 +160,26 @@ def new_data_init(annotations_file, device):
     neg_train = negative_patient_ids[:int(0.8 * len(negative_patient_ids))]
     neg_valid = negative_patient_ids[int(0.8 * len(negative_patient_ids)):int(0.9 * len(negative_patient_ids))]
     neg_test = negative_patient_ids[int(0.9 * len(negative_patient_ids)):]
+    #a=neg_train[:int(0.3 * len(neg_train))]
+    #n=np.concatenate(pos_train, a)
+
+    train_set = [np.concatenate((pos_train, neg_train[:int(0.3 * len(neg_train))])),
+                 np.concatenate((pos_train, neg_train[int(0.3 * len(neg_train)) : int(0.6 * len(neg_train))])),
+                 np.concatenate((pos_train, neg_train[int(0.9 * len(neg_train)):]))]
 
     # combine valid and test
-    train = np.concatenate((pos_train, neg_train))
-    valid = np.concatenate((pos_valid, neg_valid))
-    test = np.concatenate((pos_test, neg_test))
+    valid_set = np.concatenate((pos_valid, neg_valid))
+    test_set = np.concatenate((pos_test, neg_test))
+
+    # shuffle training
+    for s in train_set:
+        np.random.shuffle(s)
 
     # shuffle valid and test
-    np.random.shuffle(train)
-    np.random.shuffle(valid)
-    np.random.shuffle(test)
+    np.random.shuffle(valid_set)
+    np.random.shuffle(test_set)
 
-    return train, valid, test, labels
+    return train_set, valid_set, test_set, labels
 
 
 def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs) :
@@ -179,7 +188,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
     if load_saved:
         model = load_model("./saved_models/2024-11-28 04:53:34.928489-epoch0")
     else:
-        model=get_object_detection_model_giou(2)
+        model = get_object_detection_model_giou(2)
     model.to(device)
     print('model initialized')
     #optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9323368245702841, weight_decay=0.0001298489873419346)
@@ -200,7 +209,10 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
         except Exception as e:
             print(f"An exception occurred: {e}")
             raise e
-        #stats = coco_evaluator.coco_eval['bbox'].stats
+
+    # evaluate on test set
+    evaluate(model, test_data_loader, device, optimizer, summary_writer, -1)
+    #stats = coco_evaluator.coco_eval['bbox'].stats
         #val_map = stats[0]
         #val_maps.append(val_map)
 
@@ -214,7 +226,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
 if __name__ == "__main__":
     annotations_file = 'stage_2_train_labels.csv'
     image_dir = './stage_2_train_images'
-    num_epochs = 30
+    num_epochs = 10
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -225,7 +237,7 @@ if __name__ == "__main__":
     train_ids, validation_ids, test_ids, annotations = new_data_init(annotations_file, device)
     mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader, test_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids,
-                                                                        annotations, mean, std, device, is_train_augmented=False)
+                                                                        annotations, mean, std, device, is_train_augmented=True)
 
     #coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
     train_and_evaluate(train_loader, valid_loader, test_loader, device, num_epochs)

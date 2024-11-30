@@ -112,16 +112,21 @@ def get_transforms(train):
 
 
 def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations,device):
-    train_dataset = PneumoniaDataset(
-        image_dir=image_dir,
-        annotations=annotations,
-        patient_ids=train_ids,
-        transforms=get_init_norm_transform(),
-        device=device
-    )
+    train_dataset = []
+    train_loader = []
+    for s in train_ids:
+        train_dataset_sub = PneumoniaDataset(
+            image_dir=image_dir,
+            annotations=annotations,
+            patient_ids=s,
+            transforms=get_init_norm_transform(),
+            device=device
+        )
+        train_loader_sub = torch.utils.data.DataLoader(
+            train_dataset_sub, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
+        train_dataset.append(train_dataset_sub)
+        train_loader.append(train_loader_sub)
 
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
     return train_loader
 
 
@@ -136,7 +141,7 @@ def custom_collate_fn(batch):
     return list(images), list(targets)
 
 
-def get_train_loader_with_augmentation(mean_value,std_value):
+def get_train_loader_with_augmentation(mean_value, std_value):
     transforms_list = [transforms.ToTensor()]
     transforms_list.append(transforms.RandomHorizontalFlip(0.5))
     transforms_list.append(transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)))
@@ -150,9 +155,15 @@ def get_train_loader_with_augmentation(mean_value,std_value):
 
 def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, annotations, mean_value, std_value, device, is_train_augmented):
     norm_transforms = get_norm_transform(mean_value, std_value, device)
-    train_transform = get_train_loader_with_augmentation(mean_value, std_value)
-    train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=train_ids, transforms=train_transform)
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
+    train_transform = norm_transforms = get_norm_transform(mean_value,std_value,device)
+    if is_train_augmented:
+        train_transform = get_train_loader_with_augmentation(mean_value, std_value)
+
+    train_loader = []
+    for sub in train_ids:
+        train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=sub, transforms=train_transform)
+        train_loader_sub = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
+        train_loader.append(train_loader_sub)
     val_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=validation_ids, transforms=norm_transforms)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
     test_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=test_ids, transforms=norm_transforms, device=device)
