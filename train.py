@@ -123,7 +123,7 @@ def calculate_precision_recall_correct(
     return precision, recall, accuracy
 
 
-def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch):
+def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch, thresh):
     model.eval()
     iou_threshold = 0.5
 
@@ -146,7 +146,7 @@ def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch):
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.3) #.83 is the best
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=thresh) #.83 is the best
 
             # Perform non max suppression
             filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)

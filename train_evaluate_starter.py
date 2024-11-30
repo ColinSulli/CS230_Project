@@ -207,7 +207,8 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             train(model, optimizer, train_data_loader, device, epoch, summary_writer)
             lr_scheduler.step()
         try:
-            evaluate(model, valid_data_loader, device, optimizer, summary_writer, epoch)
+            for i, thresh in enumerate(np.arange(0.3, 0.8, 0.02)):
+                evaluate(model, valid_data_loader, device, optimizer, summary_writer, epoch, thresh)
             #coco_evaluator = evaluate(model, val_loader,valid_gt, device=device)
         except Exception as e:
             print(f"An exception occurred: {e}")
