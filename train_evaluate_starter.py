@@ -151,9 +151,6 @@ def new_data_init(annotations_file, device):
         positive_patient_ids = positive_patient_ids[:1000]
         negative_patient_ids = negative_patient_ids[:3000]
 
-    positive_patient_ids = positive_patient_ids[:1000]
-    negative_patient_ids = negative_patient_ids[:3000]
-
     # positive IDs
     pos_train = positive_patient_ids[:int(0.8 * len(positive_patient_ids))]
     pos_valid = positive_patient_ids[int(0.8 * len(positive_patient_ids)):int(0.9 * len(positive_patient_ids))]
@@ -207,15 +204,16 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             train(model, optimizer, train_data_loader, device, epoch, summary_writer)
             lr_scheduler.step()
         try:
-            for i, thresh in enumerate(np.arange(0.3, 0.8, 0.02)):
-                evaluate(model, valid_data_loader, device, optimizer, summary_writer, epoch, thresh)
+            #for i, thresh in enumerate(np.arange(0.3, 0.8, 0.02)):
+            evaluate(model, valid_data_loader, device, optimizer, summary_writer, epoch, 0.62)
             #coco_evaluator = evaluate(model, val_loader,valid_gt, device=device)
         except Exception as e:
             print(f"An exception occurred: {e}")
             raise e
 
     # evaluate on test set
-    evaluate(model, test_data_loader, device, optimizer, summary_writer, -1)
+    for i, thresh in enumerate(np.arange(0.6, 0.8, 0.02)):
+        evaluate(model, test_data_loader, device, optimizer, summary_writer, -1, thresh)
     #stats = coco_evaluator.coco_eval['bbox'].stats
         #val_map = stats[0]
         #val_maps.append(val_map)

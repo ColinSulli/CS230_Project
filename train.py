@@ -196,6 +196,7 @@ def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch, thre
     print("Binary Accuracy: ", correct[0] / len(valid_loader))
     print("---------------------")
 
-    save_model(model, optimizer, f'./saved_models/{datetime.now()}-epoch{epoch}')
+    if epoch != -1:
+        save_model(model, optimizer, f'./saved_models/{datetime.now()}-epoch{epoch}')
 
     return None
