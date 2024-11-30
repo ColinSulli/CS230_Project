@@ -187,9 +187,9 @@ def new_data_init(annotations_file, device):
 
 def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs) :
     model = None
-    load_saved = False
+    load_saved = True
     if load_saved:
-        model = load_model("./saved_models/2024-11-30 01:41:11.377575-epoch0")
+        model = load_model("./saved_models/2024-11-30 03:30:59.039124-epoch0")
     else:
         model = get_object_detection_model_giou(2)
     model.to(device)
