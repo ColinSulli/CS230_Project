@@ -26,10 +26,7 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
     i = 0
 
     c_sub = epoch % 3
-    print(train_loader)
     t_loader = train_loader[c_sub]
-    print(t_loader)
-
 
     for images, targets in tqdm(t_loader, desc=f'train epoch: {epoch}', disable=False):
         images = list(image.to(device) for image in images)
@@ -149,7 +146,7 @@ def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch):
             prediction = model(images)
 
             # filter out bad scores
-            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.85) #.83 is the best
+            filtered_predictions = filter_prediction_scores(prediction, filter_threshold=0.5) #.83 is the best
 
             # Perform non max suppression
             filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.2)

@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from dataloader import get_dataloaders_with_norm
 from dataloader import get_init_norm_transform
-from dataloader import get_norm_transform
+#from dataloader import get_norm_transform
 from dataloader import get_train_dataloader_no_norm
 from train import train, evaluate
 from model import get_object_detection_model_restnet101
@@ -19,7 +19,7 @@ from train import load_model
 
 def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,device):
 
-    t_loader = get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotations, device)
+    t_loader = get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotations)
     channel_sum = torch.zeros(3)
     channel_squared_sum = torch.zeros(3)
     num_batches = 0
@@ -184,9 +184,9 @@ def new_data_init(annotations_file, device):
 
 def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs) :
     model = None
-    load_saved = False
+    load_saved = True
     if load_saved:
-        model = load_model("./saved_models/2024-11-28 04:53:34.928489-epoch0")
+        model = load_model("./saved_models/2024-11-30 01:41:11.377575-epoch0")
     else:
         model = get_object_detection_model_giou(2)
     model.to(device)
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     train_ids, validation_ids, test_ids, annotations = new_data_init(annotations_file, device)
     mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader, test_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids,
-                                                                        annotations, mean, std, device, is_train_augmented=True)
+                                                                        annotations, mean, std, device, is_train_augmented=False)
 
     #coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
     train_and_evaluate(train_loader, valid_loader, test_loader, device, num_epochs)
