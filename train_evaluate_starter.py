@@ -187,7 +187,7 @@ def new_data_init(annotations_file, device):
 
 def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs) :
     model = None
-    load_saved = True
+    load_saved = False
     if load_saved:
         model = load_model("./saved_models/2024-11-30 03:30:59.039124-epoch0")
     else:
