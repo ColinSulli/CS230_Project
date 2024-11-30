@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from dataloader import get_dataloaders_with_norm
 from dataloader import get_init_norm_transform
-from dataloader import get_norm_transform
+#from dataloader import get_norm_transform
 from dataloader import get_train_dataloader_no_norm
 from train import train, evaluate
 from model import get_object_detection_model_restnet101
@@ -19,7 +19,7 @@ from train import load_model
 
 def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,device):
 
-    t_loader = get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotations, device)
+    t_loader = get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotations)
     channel_sum = torch.zeros(3)
     channel_squared_sum = torch.zeros(3)
     num_batches = 0
@@ -184,7 +184,7 @@ def new_data_init(annotations_file, device):
 
 def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs) :
     model = None
-    load_saved = True
+    load_saved = False
     if load_saved:
         model = load_model("./saved_models/2024-11-30 01:41:11.377575-epoch0")
     else:
