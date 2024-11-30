@@ -229,7 +229,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
 if __name__ == "__main__":
     annotations_file = 'stage_2_train_labels.csv'
     image_dir = './stage_2_train_images'
-    num_epochs = 10
+    num_epochs = 9
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
