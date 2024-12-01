@@ -164,12 +164,10 @@ def new_data_init(annotations_file, device):
     neg_train = negative_patient_ids[:int(0.8 * len(negative_patient_ids))]
     neg_valid = negative_patient_ids[int(0.8 * len(negative_patient_ids)):int(0.9 * len(negative_patient_ids))]
     neg_test = negative_patient_ids[int(0.9 * len(negative_patient_ids)):]
-    #a=neg_train[:int(0.3 * len(neg_train))]
-    #n=np.concatenate(pos_train, a)
 
-    train_set = [np.concatenate((pos_train, neg_train[:int(0.3 * len(neg_train))])),
-                 np.concatenate((pos_train, neg_train[int(0.3 * len(neg_train)) : int(0.6 * len(neg_train))])),
-                 np.concatenate((pos_train, neg_train[int(0.9 * len(neg_train)):]))]
+    train_set = [np.concatenate((pos_train, neg_train[:int((1/3) * len(neg_train))])),
+                 np.concatenate((pos_train, neg_train[int((1/3) * len(neg_train)) : int((2/3) * len(neg_train))])),
+                 np.concatenate((pos_train, neg_train[int((2/3) * len(neg_train)):]))]
 
     # combine valid and test
     valid_set = np.concatenate((pos_valid, neg_valid))
@@ -188,10 +186,10 @@ def new_data_init(annotations_file, device):
 
 def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs, valid_gt) :
     model = None
-    load_saved = False
+    load_saved = True
     fcos = True
     if load_saved:
-        model = load_model("./saved_models/2024-11-30 03:30:59.039124-epoch0")
+        model = load_model("./saved_models/2024-12-01 15:48:51.996946-epoch0")
     else:
         if fcos:
             model = get_object_detection_model_fcos(2)

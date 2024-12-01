@@ -65,7 +65,7 @@ def evaluate(model,valid_loader,valid_gt,device, summary_writer):
     coco_evaluator = CocoEvaluator(coco_c, iou_types=['bbox'])
     results=[]
     confidence_threshold = 0.05
-    for images,targets in valid_loader:
+    for images, targets in tqdm(valid_loader, desc=f'eval coco', disable=False):
         images = list(img.to(device) for img in images)
         with torch.no_grad():
             outputs = model(images)
@@ -115,7 +115,7 @@ def evaluate_torchmetrics(model,valid_loader,valid_gt,device):
     model.eval()
  #   valid_gt=convert_evalset_coco(valid_loader.dataset.patient_ids,'./')
     metric = MeanAveragePrecision(box_format='xyxy', iou_type='bbox')
-    prog_bar = tqdm(valid_loader, total=len(valid_loader))
+    prog_bar = tqdm(valid_loader, desc=f'eval torchmetrics', disable=False, total=len(valid_loader))
     for i, vl in enumerate(prog_bar):
         images, targets=vl
         target = []
