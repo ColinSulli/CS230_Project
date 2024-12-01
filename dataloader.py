@@ -153,9 +153,6 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
     train_rotate = A.Compose([
         A.Rotate(limit=15, p=0.5), ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-    train_crop = A.Compose([
-        A.RandomResizedCrop(height=1024, width=1024, scale=(0.8, 1.0), p=0.5), ToTensorV2()],
-        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
     train_color = A.Compose([
         A.ColorJitter(brightness=0.2, contrast=0.2, p=0.5), ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
@@ -166,7 +163,7 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
     train_loader = []
     for sub in train_ids:
         train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=sub,
-                                         trnfrms=[train_flip_vertical, train_flip_horiontal, train_blur, train_rotate, train_crop, train_color], fraction=data_aug_frac)
+                                         trnfrms=[train_flip_vertical, train_flip_horiontal, train_blur, train_rotate, train_color], fraction=data_aug_frac)
         train_loader_sub = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
         train_loader.append(train_loader_sub)
 
