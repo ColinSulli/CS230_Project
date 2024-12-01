@@ -217,9 +217,9 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
         try:
             #for i, thresh in enumerate(np.arange(0.3, 0.8, 0.02)):
             #evaluate_custom(model, valid_data_loader, device, optimizer, summary_writer, epoch, 0.85)
-            if epoch != 0 and epoch % 3 == 0:
-                coco_evaluator = evaluate(model,valid_loader,valid_gt,device, summary_writer)
-                evaluate_torchmetrics(model, valid_loader, valid_gt, device)
+            #if epoch != 0 and epoch % 3 == 0:
+                #coco_evaluator = evaluate(model,valid_loader,valid_gt,device, summary_writer)
+            evaluate_torchmetrics(model, valid_loader, valid_gt, device, summary_writer, epoch)
         except Exception as e:
             print(f"An exception occurred: {e}")
             raise e
@@ -229,10 +229,10 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             val_map = stats[0]
             val_maps.append(val_map)
 
-        if epoch == 8:
+        if epoch == 10:
             print("TEST DATASET")
             coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
-            evaluate_torchmetrics(model, test_data_loader, test_gt, device)
+            evaluate_torchmetrics(model, test_data_loader, test_gt, device, summary_writer, -1)
 
     e = range(1, epochs + 1)
     plt.plot(e, val_maps, label='Validation mAP')
@@ -243,7 +243,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
     plt.show()
 
     coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
-    evaluate_torchmetrics(model, test_data_loader, test_gt, device)
+    evaluate_torchmetrics(model, test_data_loader, test_gt, device, summary_writer, -1)
     # evaluate on test set
     for i, thresh in enumerate(np.arange(0.8, 0.9, 0.02)):
         evaluate_custom(model, test_data_loader, device, optimizer, summary_writer, -1, thresh)
@@ -251,7 +251,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
 if __name__ == "__main__":
     annotations_file = 'stage_2_train_labels.csv'
     image_dir = './stage_2_train_images'
-    num_epochs = 18
+    num_epochs = 20
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
