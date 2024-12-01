@@ -51,9 +51,9 @@ def train_fcos(model, optimizer, train_loader, device, epoch, summary_writer):
         prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
         if i != 0 and i % 10 == 0:
             summary_writer.add_scalar('train_loss', losses.item(), sum_writter_var)
-            summary_writer.add_scalar('classification_loss', epoch_loss['classification'], sum_writter_var)
-            summary_writer.add_scalar('bbox_regression_loss', epoch_loss['bbox_regression'], sum_writter_var)
-            summary_writer.add_scalar('bbox_ctrness_loss', epoch_loss['bbox_ctrness'], sum_writter_var)
+            summary_writer.add_scalar('classification_loss', epoch_loss['classification'] / i, sum_writter_var)
+            summary_writer.add_scalar('bbox_regression_loss', epoch_loss['bbox_regression'] / i, sum_writter_var)
+            summary_writer.add_scalar('bbox_ctrness_loss', epoch_loss['bbox_ctrness'] / i, sum_writter_var)
         i += 1
         sum_writter_var += 1
     num_batches = len(t_loader)
