@@ -101,6 +101,7 @@ def evaluate_torchmetrics(model,valid_loader,valid_gt,device):
     model.eval()
  #   valid_gt=convert_evalset_coco(valid_loader.dataset.patient_ids,'./')
     metric = MeanAveragePrecision(box_format='xyxy', iou_type='bbox')
+    metric.reset()
     prog_bar = tqdm(valid_loader, total=len(valid_loader))
     for i, vl in enumerate(prog_bar):
         images, targets=vl
@@ -122,8 +123,8 @@ def evaluate_torchmetrics(model,valid_loader,valid_gt,device):
             preds.append(preds_dict)
             target.append(true_dict)
         #####################################
-    metric.reset()
-    metric.update(preds, target)
+
+        metric.update(preds, target)
     summary=metric.compute()    
     #print(summary)
     return summary
