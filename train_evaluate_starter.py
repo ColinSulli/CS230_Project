@@ -229,6 +229,11 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             val_map = stats[0]
             val_maps.append(val_map)
 
+        if epoch == 8:
+            print("TEST DATASET")
+            coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
+            evaluate_torchmetrics(model, test_data_loader, test_gt, device)
+
     e = range(1, epochs + 1)
     plt.plot(e, val_maps, label='Validation mAP')
     plt.xlabel('Epoch')
