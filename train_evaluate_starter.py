@@ -6,16 +6,20 @@ from dataloader import get_dataloaders_with_norm
 from dataloader import get_init_norm_transform
 #from dataloader import get_norm_transform
 from dataloader import get_train_dataloader_no_norm
-from train import train, evaluate
+from train import train, evaluate_custom
 from model import get_object_detection_model_restnet101
 from model import get_object_detection_model_giou
 from datetime import datetime
 import torch
 import torchvision
 from model import get_object_detection_model
+from model import get_object_detection_model_fcos
 from utils import convert_evalset_coco
 from torch.utils.tensorboard import SummaryWriter
 from train import load_model
+from train_fcos import train_fcos
+from train_fcos import evaluate
+from train_fcos import evaluate_torchmetrics
 
 def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,device):
 
@@ -148,8 +152,8 @@ def new_data_init(annotations_file, device):
 
     # to make testing on PC faster
     if device == torch.device('cpu'):
-        positive_patient_ids = positive_patient_ids[:1000]
-        negative_patient_ids = negative_patient_ids[:3000]
+        positive_patient_ids = positive_patient_ids[:10]
+        negative_patient_ids = negative_patient_ids[:30]
 
     # positive IDs
     pos_train = positive_patient_ids[:int(0.8 * len(positive_patient_ids))]
@@ -182,13 +186,17 @@ def new_data_init(annotations_file, device):
     return train_set, valid_set, test_set, labels
 
 
-def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs) :
+def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs, valid_gt) :
     model = None
     load_saved = False
+    fcos = True
     if load_saved:
         model = load_model("./saved_models/2024-11-30 03:30:59.039124-epoch0")
     else:
-        model = get_object_detection_model_giou(2)
+        if fcos:
+            model = get_object_detection_model_fcos(2)
+        else:
+            model = get_object_detection_model_giou(2)
     model.to(device)
     print('model initialized')
     #optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9323368245702841, weight_decay=0.0001298489873419346)
@@ -201,19 +209,25 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
     for epoch in range(epochs):
         print('runnng epoch:', epoch)
         if not load_saved:
-            train(model, optimizer, train_data_loader, device, epoch, summary_writer)
+            if fcos:
+                train_fcos(model, optimizer, train_data_loader, device, epoch, summary_writer)
+            else:
+                train(model, optimizer, train_data_loader, device, epoch, summary_writer)
+
             lr_scheduler.step()
         try:
             #for i, thresh in enumerate(np.arange(0.3, 0.8, 0.02)):
-            evaluate(model, valid_data_loader, device, optimizer, summary_writer, epoch, 0.62)
+            evaluate_custom(model, valid_data_loader, device, optimizer, summary_writer, epoch, 0.85)
+            evaluate(model,valid_loader,valid_gt,device, summary_writer)
+            evaluate_torchmetrics(model, valid_loader, valid_gt, device)
             #coco_evaluator = evaluate(model, val_loader,valid_gt, device=device)
         except Exception as e:
             print(f"An exception occurred: {e}")
             raise e
 
     # evaluate on test set
-    for i, thresh in enumerate(np.arange(0.6, 0.8, 0.02)):
-        evaluate(model, test_data_loader, device, optimizer, summary_writer, -1, thresh)
+    for i, thresh in enumerate(np.arange(0.8, 0.9, 0.02)):
+        evaluate_custom(model, test_data_loader, device, optimizer, summary_writer, -1, thresh)
     #stats = coco_evaluator.coco_eval['bbox'].stats
         #val_map = stats[0]
         #val_maps.append(val_map)
@@ -241,5 +255,5 @@ if __name__ == "__main__":
     train_loader, valid_loader, test_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids,
                                                                         annotations, mean, std, device, is_train_augmented=False)
 
-    #coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
-    train_and_evaluate(train_loader, valid_loader, test_loader, device, num_epochs)
+    coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
+    train_and_evaluate(train_loader, valid_loader, test_loader, device, num_epochs, coco_format_validation_ds)

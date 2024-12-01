@@ -19,7 +19,6 @@ def replace_relu_with_inplace_false(module):
         else:
             replace_relu_with_inplace_false(child)
 
-
 def train(model, optimizer, train_loader, device, epoch, summary_writer):
     model.train()
     replace_relu_with_inplace_false(model)
@@ -27,6 +26,14 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
 
     c_sub = epoch % 3
     t_loader = train_loader[c_sub]
+
+    # determine correct value for sum_writter
+    sum_writter_var = 0
+    x = 0
+    while x < epoch:
+        index = x % epoch
+        sum_writter_var += len(t_loader[index])
+        x += 1
 
     for images, targets in tqdm(t_loader, desc=f'train epoch: {epoch}', disable=False):
         images = list(image.to(device) for image in images)
@@ -43,8 +50,9 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
         optimizer.step()
 
         if i != 0 and i % 10 == 0:
-            summary_writer.add_scalar('train_loss', losses.item(), epoch * len(t_loader) + i)
+            summary_writer.add_scalar('train_loss', losses.item(), sum_writter_var)
         i += 1
+        sum_writter_var += 1
 
         #if i == 10:
         #    break
@@ -123,7 +131,7 @@ def calculate_precision_recall_correct(
     return precision, recall, accuracy
 
 
-def evaluate(model, valid_loader, device, optimizer, summary_writer, epoch, thresh):
+def evaluate_custom(model, valid_loader, device, optimizer, summary_writer, epoch, thresh):
     model.eval()
     iou_threshold = 0.5
 

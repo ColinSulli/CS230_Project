@@ -15,12 +15,24 @@ def replace_relu_with_inplace_false(module):
             setattr(module, name, nn.ReLU(inplace=False))
         else:
             replace_relu_with_inplace_false(child)
-def train(model, optimizer, train_loader, device, epoch):
+def train_fcos(model, optimizer, train_loader, device, epoch, summary_writer):
     model.train()
     #replace_relu_with_inplace_false(model)
     i = 0
+
+    c_sub = epoch % 3
+    t_loader = train_loader[c_sub]
+
+    # determine correct value for sum_writter
+    sum_writter_var = 0
+    x = 0
+    while x < epoch:
+        index = x % 3
+        sum_writter_var += len(train_loader[index])
+        x += 1
+
     epoch_loss = {'classification': 0, 'bbox_regression': 0, 'bbox_ctrness': 0}
-    prog_bar = tqdm(train_loader, total=len(train_loader))
+    prog_bar = tqdm(t_loader, total=len(t_loader))
     for i, tl in enumerate(prog_bar):
         images, targets=tl
         images = list(image.to(device) for image in images)
@@ -37,17 +49,18 @@ def train(model, optimizer, train_loader, device, epoch):
         losses.backward()
         optimizer.step()
         prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
-        # if i % 100 == 0:
-        #     print(f"Epoch {epoch}, Iteration {i}, Loss: {losses.item()}, Number of Images per iteration: {len(images)}")
-        # i += 1    
-    num_batches = len(train_loader)
+        if i != 0 and i % 10 == 0:
+            summary_writer.add_scalar('train_loss', losses.item(), sum_writter_var)
+        i += 1
+        sum_writter_var += 1
+    num_batches = len(t_loader)
     epoch_loss = {k: v / num_batches for k, v in epoch_loss.items()}
     print(f"Epoch {epoch} Average Loss Components: {epoch_loss}")
     return loss_value
-def evaluate(model,valid_loader,valid_gt,device):
+def evaluate(model,valid_loader,valid_gt,device, summary_writer):
     print('Validating....')
     model.eval()
- #   valid_gt=convert_evalset_coco(valid_loader.dataset.patient_ids,'./')
+    #valid_gt=convert_evalset_coco(valid_loader.dataset.patient_ids,'./')
     coco_c=COCO(valid_gt)
     coco_evaluator = CocoEvaluator(coco_c, iou_types=['bbox'])
     results=[]
@@ -96,6 +109,7 @@ def evaluate(model,valid_loader,valid_gt,device):
             coco_evaluator.coco_eval[iou_type].summarize()
 
     return coco_evaluator
+
 def evaluate_torchmetrics(model,valid_loader,valid_gt,device):
     print('Validating....')
     model.eval()
@@ -125,5 +139,5 @@ def evaluate_torchmetrics(model,valid_loader,valid_gt,device):
     metric.reset()
     metric.update(preds, target)
     summary=metric.compute()    
-    #print(summary)
+    print(summary)
     return summary
