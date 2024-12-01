@@ -184,9 +184,9 @@ def new_data_init(annotations_file, device):
     return train_set, valid_set, test_set, labels
 
 
-def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs, valid_gt) :
+def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, device, epochs, valid_gt, test_gt) :
     model = None
-    load_saved = True
+    load_saved = False
     fcos = True
     if load_saved:
         model = load_model("./saved_models/2024-12-01 15:48:51.996946-epoch0")
@@ -204,6 +204,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
     torch.autograd.set_detect_anomaly(True)
     val_maps = []
     summary_writer = SummaryWriter(f'runs/train-{datetime.now()}')
+    coco_evaluator = None
     for epoch in range(epochs):
         print('runnng epoch:', epoch)
         if not load_saved:
@@ -215,32 +216,37 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             lr_scheduler.step()
         try:
             #for i, thresh in enumerate(np.arange(0.3, 0.8, 0.02)):
-            evaluate_custom(model, valid_data_loader, device, optimizer, summary_writer, epoch, 0.85)
-            evaluate(model,valid_loader,valid_gt,device, summary_writer)
-            evaluate_torchmetrics(model, valid_loader, valid_gt, device)
-            #coco_evaluator = evaluate(model, val_loader,valid_gt, device=device)
+            #evaluate_custom(model, valid_data_loader, device, optimizer, summary_writer, epoch, 0.85)
+            if epoch != 0 and epoch % 3 == 0:
+                coco_evaluator = evaluate(model,valid_loader,valid_gt,device, summary_writer)
+                evaluate_torchmetrics(model, valid_loader, valid_gt, device)
         except Exception as e:
             print(f"An exception occurred: {e}")
             raise e
 
-    # evaluate on test set
-    for i, thresh in enumerate(np.arange(0.8, 0.9, 0.02)):
-        evaluate_custom(model, test_data_loader, device, optimizer, summary_writer, -1, thresh)
-    #stats = coco_evaluator.coco_eval['bbox'].stats
-        #val_map = stats[0]
-        #val_maps.append(val_map)
+        if epoch != 0 and epoch % 3 == 0 and coco_evaluator is not None:
+            stats = coco_evaluator.coco_eval['bbox'].stats
+            val_map = stats[0]
+            val_maps.append(val_map)
 
-    '''e = range(1, epochs + 1)
+    e = range(1, epochs + 1)
     plt.plot(e, val_maps, label='Validation mAP')
     plt.xlabel('Epoch')
     plt.ylabel('mAP')
     plt.title('Validation mAP over Epochs')
     plt.legend()
-    plt.show()'''
+    plt.show()
+
+    coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
+    evaluate_torchmetrics(model, test_data_loader, test_gt, device)
+    # evaluate on test set
+    for i, thresh in enumerate(np.arange(0.8, 0.9, 0.02)):
+        evaluate_custom(model, test_data_loader, device, optimizer, summary_writer, -1, thresh)
+
 if __name__ == "__main__":
     annotations_file = 'stage_2_train_labels.csv'
     image_dir = './stage_2_train_images'
-    num_epochs = 9
+    num_epochs = 18
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -253,5 +259,6 @@ if __name__ == "__main__":
     train_loader, valid_loader, test_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids,
                                                                         annotations, mean, std, device, is_train_augmented=False)
 
-    coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './')
-    train_and_evaluate(train_loader, valid_loader, test_loader, device, num_epochs, coco_format_validation_ds)
+    coco_format_validation_ds = convert_evalset_coco(validation_ids, annotations, './', valid_test=True)
+    coco_format_test_ds = convert_evalset_coco(test_ids, annotations, './', valid_test=False)
+    train_and_evaluate(train_loader, valid_loader, test_loader, device, num_epochs, coco_format_validation_ds, coco_format_test_ds)

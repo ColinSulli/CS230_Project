@@ -1,8 +1,8 @@
 #Convert Valid set Ground truth annotations to COCO format
 import json
 from pycocotools.coco import COCO
-def convert_evalset_coco(patient_ids_validation,labels,json_file_location):
-    json_file_name='ground_truth.json'
+def convert_evalset_coco(patient_ids_validation,labels,json_file_location,valid_test):
+    json_file_name='ground_truth_valid.json' if valid_test else 'ground_truth_test.json'
     images = []
 
     for idx, patient_id in enumerate(patient_ids_validation):

@@ -171,8 +171,8 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
         train_loader.append(train_loader_sub)
 
     val_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=validation_ids, trnfrms=valid_transform, fraction=1)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
     test_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=test_ids,trnfrms=valid_transform, fraction=1)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
 
     return train_loader, val_loader, test_loader

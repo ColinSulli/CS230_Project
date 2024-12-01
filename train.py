@@ -31,7 +31,7 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
     sum_writter_var = 0
     x = 0
     while x < epoch:
-        index = x % epoch
+        index = x % 3
         sum_writter_var += len(t_loader[index])
         x += 1
 
