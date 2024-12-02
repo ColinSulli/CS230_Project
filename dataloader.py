@@ -53,10 +53,9 @@ class PneumoniaDataset(Dataset):
         target = {}
         transformed = get_init_norm_transform()(image=image, bboxes=boxes, labels=labels)
         if self.fraction != 1:
-            r = np.random.randint(0, 1)
-            if r < self.fraction:
-                index = np.random.randint(0, len(self.trnfrms) - 1)
-                transformed = self.trnfrms[index](image=image, bboxes=boxes, labels=labels)
+            r = np.random.randint(0, 100)
+            if r < int(self.fraction * 100):
+                transformed = self.trnfrms(image=image, bboxes=boxes, labels=labels)
 
         image = transformed['image']
         boxes = transformed['bboxes']
@@ -139,22 +138,31 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
     # valid_transform=get_valid_transform()
     data_aug_frac = 1
     if is_train_augmented:
-        data_aug_frac = 0.5
+        data_aug_frac = 0.3
 
-    train_flip_vertical = A.Compose([
-        A.VerticalFlip(p=0.5), ToTensorV2()],
+    transform = A.Compose([
+        A.HorizontalFlip(p=0.3),
+        A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 2), p=0.3),
+        A.Rotate(limit=6, p=0.3),
+        A.ColorJitter(brightness=0.2, contrast=0.2, p=0.3),
+        A.Affine(shear=(3.5, 3.5), p=0.3),
+        ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-    train_flip_horiontal = A.Compose([
+
+    train_flip_horizontal = A.Compose([
         A.HorizontalFlip(p=0.5), ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
     train_blur = A.Compose([
-        A.GaussianBlur(blur_limit=(5, 9), sigma_limit=(0.1, 5), p=0.5), ToTensorV2()],
+        A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 2), p=0.5), ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
     train_rotate = A.Compose([
-        A.Rotate(limit=15, p=0.5), ToTensorV2()],
+        A.Rotate(limit=6, p=0.5), ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
     train_color = A.Compose([
-        A.ColorJitter(brightness=0.2, contrast=0.2, p=0.5), ToTensorV2()],
+        A.ColorJitter(brightness=0.1, contrast=0.1, p=0.5), ToTensorV2()],
+        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
+    train_shear = A.Compose([
+        A.Affine(shear=(2.5, 2.5), p=0.2), ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
 
     # train_transform=get_train_loader_with_augmentation(mean_value,std_value)
@@ -163,7 +171,7 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
     train_loader = []
     for sub in train_ids:
         train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=sub,
-                                         trnfrms=[train_flip_vertical, train_flip_horiontal, train_blur, train_rotate, train_color], fraction=data_aug_frac)
+                                         trnfrms=transform, fraction=0.35)
         train_loader_sub = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
         train_loader.append(train_loader_sub)
 
