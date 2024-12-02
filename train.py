@@ -57,7 +57,8 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
         #if i == 10:
         #    break
 
-
+# code taken from public repo:
+# https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/
 def calculate_iou(box_1, box_2):
     # determine the (x, y)-coordinates of the intersection rectangle
     xA = max(box_1[0], box_2[0])
