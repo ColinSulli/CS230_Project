@@ -18,21 +18,18 @@ def train_fcos(model, optimizer, train_loader, device, epoch, summary_writer):
     model.train()
     replace_relu_with_inplace_false(model)
     i = 0
-    c_sub = epoch % 3
-    t_loader = train_loader[c_sub]
 
     # determine correct value for sum_writter
     sum_writter_var = 0
     x = 0
     while x < epoch:
-        index = x % 3
-        sum_writter_var += len(train_loader[index])
+        sum_writter_var += len(train_loader)
         x += 1
 
     lambda_reg=2.0
     lambda_cen=2.0
     epoch_loss = {'classification': 0, 'bbox_regression': 0, 'bbox_ctrness': 0}
-    for images, targets in tqdm(t_loader, desc=f'train FCOS epoch {epoch}', disable=False):
+    for images, targets in tqdm(train_loader, desc=f'train FCOS epoch {epoch}', disable=False):
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -59,7 +56,7 @@ def train_fcos(model, optimizer, train_loader, device, epoch, summary_writer):
             summary_writer.add_scalar('bbox_ctrness_loss', epoch_loss['bbox_ctrness'] / i, sum_writter_var)
         i += 1
         sum_writter_var += 1
-    num_batches = len(t_loader)
+    num_batches = len(train_loader)
     epoch_loss = {k: v / num_batches for k, v in epoch_loss.items()}
     print(f"Epoch {epoch} Average Loss Components: {epoch_loss}")
     return loss_value

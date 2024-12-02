@@ -24,18 +24,14 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
     replace_relu_with_inplace_false(model)
     i = 0
 
-    c_sub = epoch % 3
-    t_loader = train_loader[c_sub]
-
     # determine correct value for sum_writter
     sum_writter_var = 0
     x = 0
     while x < epoch:
-        index = x % 3
-        sum_writter_var += len(t_loader[index])
+        sum_writter_var += len(train_loader)
         x += 1
 
-    for images, targets in tqdm(t_loader, desc=f'train epoch: {epoch}', disable=False):
+    for images, targets in tqdm(train_loader, desc=f'train epoch: {epoch}', disable=False):
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 

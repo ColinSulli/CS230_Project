@@ -103,21 +103,16 @@ def get_init_norm_transform():
 
 
 def get_train_dataloader_no_norm(image_dir, train_ids, validation_ids, annotations):
-    train_dataset = []
-    train_loader = []
-    for s in train_ids:
-        train_dataset_sub = PneumoniaDataset(
-            image_dir=image_dir,
-            annotations=annotations,
-            patient_ids=s,
-            trnfrms=get_init_norm_transform(),
-            fraction=1
-        )
-        train_loader_sub = torch.utils.data.DataLoader(
-            train_dataset_sub, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
-        train_dataset.append(train_dataset_sub)
-        train_loader.append(train_loader_sub)
+    train_dataset = PneumoniaDataset(
+        image_dir=image_dir,
+        annotations=annotations,
+        patient_ids=train_ids,
+        trnfrms=get_init_norm_transform(),
+        fraction=1
+    )
 
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
     return train_loader
 
 # def get_train_loader_with_augmentation(mean_value,std_value):
@@ -168,13 +163,9 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
     # train_transform=get_train_loader_with_augmentation(mean_value,std_value)
     valid_transform = get_init_norm_transform()
 
-    train_loader = []
-    for sub in train_ids:
-        train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=sub,
-                                         trnfrms=transform, fraction=0.35)
-        train_loader_sub = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
-        train_loader.append(train_loader_sub)
-
+    train_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=train_ids,
+                                     trnfrms=transform, fraction=0.35)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
     val_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=validation_ids, trnfrms=valid_transform, fraction=1)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=6, shuffle=True, collate_fn=custom_collate_fn)
     test_dataset = PneumoniaDataset(image_dir=image_dir, annotations=annotations, patient_ids=test_ids,trnfrms=valid_transform, fraction=1)

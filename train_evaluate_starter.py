@@ -20,6 +20,7 @@ from train import load_model
 from train_fcos import train_fcos
 from train_fcos import evaluate
 from train_fcos import evaluate_torchmetrics
+import random
 
 def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,device):
 
@@ -28,18 +29,17 @@ def get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations,devic
     channel_squared_sum = torch.zeros(3)
     num_batches = 0
 
-    for sub in t_loader:
-        for b in sub:
-            images, targets = b
-            if isinstance(images, (list, tuple)):
-                images = torch.stack(images, dim=0)
-            elif isinstance(images, torch.Tensor):
-                pass
-            else:
-                raise ValueError(f"Unexpected type for images: {type(images)}")
-            channel_sum += torch.mean(images, dim=(0, 2, 3))
-            channel_squared_sum += torch.mean(images ** 2, dim=(0, 2, 3))
-            num_batches += 1
+    for b in t_loader:
+        images, targets = b
+        if isinstance(images, (list, tuple)):
+            images = torch.stack(images, dim=0)
+        elif isinstance(images, torch.Tensor):
+            pass
+        else:
+            raise ValueError(f"Unexpected type for images: {type(images)}")
+        channel_sum += torch.mean(images, dim=(0, 2, 3))
+        channel_squared_sum += torch.mean(images ** 2, dim=(0, 2, 3))
+        num_batches += 1
     mean = channel_sum / num_batches
     std = (channel_squared_sum / num_batches - mean ** 2) ** 0.5
     return mean, std
@@ -165,21 +165,20 @@ def new_data_init(annotations_file, device):
     neg_valid = negative_patient_ids[int(0.8 * len(negative_patient_ids)):int(0.9 * len(negative_patient_ids))]
     neg_test = negative_patient_ids[int(0.9 * len(negative_patient_ids)):]
 
-    train_set = [np.concatenate((pos_train, neg_train[:int((1/3) * len(neg_train))])),
-                 np.concatenate((pos_train, neg_train[int((1/3) * len(neg_train)) : int((2/3) * len(neg_train))])),
-                 np.concatenate((pos_train, neg_train[int((2/3) * len(neg_train)):]))]
+    #train_set = [np.concatenate((pos_train, neg_train[:int((1/3) * len(neg_train))])),
+    #             np.concatenate((pos_train, neg_train[int((1/3) * len(neg_train)) : int((2/3) * len(neg_train))])),
+    #             np.concatenate((pos_train, neg_train[int((2/3) * len(neg_train)):]))]
 
     # combine valid and test
-    valid_set = np.concatenate((pos_valid, neg_valid))
-    test_set = np.concatenate((pos_test, neg_test))
+    train_set = list(pos_train) + list(neg_train)
+    valid_set = list(pos_valid) + list(neg_valid)
+    test_set = list(pos_test) + list(neg_test)
 
     # shuffle training
-    for s in train_set:
-        np.random.shuffle(s)
-
-    # shuffle valid and test
-    np.random.shuffle(valid_set)
-    np.random.shuffle(test_set)
+    random.seed(42)
+    random.shuffle(train_set)
+    random.shuffle(valid_set)
+    random.shuffle(test_set)
 
     return train_set, valid_set, test_set, labels
 
@@ -234,13 +233,13 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
             evaluate_torchmetrics(model, test_data_loader, test_gt, device, summary_writer, -1)
 
-    e = range(1, epochs + 1)
+    '''e = range(1, epochs + 1)
     plt.plot(e, val_maps, label='Validation mAP')
     plt.xlabel('Epoch')
     plt.ylabel('mAP')
     plt.title('Validation mAP over Epochs')
     plt.legend()
-    plt.show()
+    plt.show()'''
 
     coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
     evaluate_torchmetrics(model, test_data_loader, test_gt, device, summary_writer, -1)
@@ -251,7 +250,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
 if __name__ == "__main__":
     annotations_file = 'stage_2_train_labels.csv'
     image_dir = './stage_2_train_images'
-    num_epochs = 20
+    num_epochs = 5
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
