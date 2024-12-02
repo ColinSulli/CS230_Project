@@ -54,7 +54,7 @@ class PneumoniaDataset(Dataset):
         transformed = get_init_norm_transform()(image=image, bboxes=boxes, labels=labels)
         if self.fraction != 1:
             r = np.random.randint(0, 100)
-            if r < int(self.fraction * 100):
+            if r <= int(self.fraction * 100):
                 transformed = self.trnfrms(image=image, bboxes=boxes, labels=labels)
 
         image = transformed['image']
