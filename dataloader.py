@@ -7,6 +7,8 @@ from PIL import Image
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import numpy as np
+import matplotlib.pyplot as plt
+import cv2
 
 
 class PneumoniaDataset(Dataset):
@@ -55,7 +57,19 @@ class PneumoniaDataset(Dataset):
         if self.fraction != 1:
             r = np.random.randint(0, 100)
             if r <= int(self.fraction * 100):
+                print("HERE!")
+                plt.imshow(image, cmap="gray")
+                plt.title("Original Image")
+                plt.axis("off")
+                plt.show()
+
                 transformed = self.trnfrms(image=image, bboxes=boxes, labels=labels)
+
+                # Augmented image
+                plt.imshow(transformed['image'][0], cmap="gray")
+                plt.title("Augmented Image")
+                plt.axis("off")
+                plt.show()
 
         image = transformed['image']
         boxes = transformed['bboxes']

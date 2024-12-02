@@ -92,7 +92,7 @@ def data_init_orig(annotations_file):
 
 def data_init_v2(annotations_file):
     # Setting up data
-    positive_sample_size = 2000
+    positive_sample_size = 6000
     labels = pd.read_csv(annotations_file)
 
     total_positive = len(labels[labels['Target'] == 1])
@@ -127,9 +127,12 @@ def data_init_v2(annotations_file):
     # Combine for training and validation
     patient_ids_train = list(positive_train_ids) + list(negative_train_ids)
     patient_ids_validation = list(positive_val_ids) + list(negative_val_ids)
+    random.shuffle(patient_ids_validation)
+    patient_ids_test = patient_ids_validation[int(0.5 * len(patient_ids_validation)):]
+    patient_ids_validation = patient_ids_validation[:int(0.5 * len(patient_ids_validation))]
     print('size of patient_ids_train', len(patient_ids_train))
     print('size of patient_ids_validation', len(patient_ids_validation))
-    return patient_ids_train, patient_ids_validation, labels
+    return patient_ids_train, patient_ids_validation, patient_ids_test, labels
 
 
 def check_cut_off(all_patient_ids, index):
@@ -250,7 +253,7 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
 if __name__ == "__main__":
     annotations_file = 'stage_2_train_labels.csv'
     image_dir = './stage_2_train_images'
-    num_epochs = 5
+    num_epochs = 20
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -258,7 +261,7 @@ if __name__ == "__main__":
     #    device = torch.device('mps')
 
     print('Running on device', device)
-    train_ids, validation_ids, test_ids, annotations = new_data_init(annotations_file, device)
+    train_ids, validation_ids, test_ids, annotations = data_init_v2(annotations_file)
     mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader, test_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids,
                                                                         annotations, mean, std, device, is_train_augmented=True)

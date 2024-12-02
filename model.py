@@ -72,7 +72,7 @@ def get_object_detection_model(num_classes):
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 
     for param in model.backbone.parameters():
-        param.requires_grad = False
+        param.requires_grad = True
     for param in model.rpn.parameters():
         param.requires_grad = True
     for param in model.roi_heads.parameters():
