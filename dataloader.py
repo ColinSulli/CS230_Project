@@ -57,19 +57,19 @@ class PneumoniaDataset(Dataset):
         if self.fraction != 1:
             r = np.random.randint(0, 100)
             if r <= int(self.fraction * 100):
-                print("HERE!")
+                '''print("HERE!")
                 plt.imshow(image, cmap="gray")
                 plt.title("Original Image")
                 plt.axis("off")
-                plt.show()
+                plt.show()'''
 
                 transformed = self.trnfrms(image=image, bboxes=boxes, labels=labels)
 
                 # Augmented image
-                plt.imshow(transformed['image'][0], cmap="gray")
+                '''plt.imshow(transformed['image'][0], cmap="gray")
                 plt.title("Augmented Image")
                 plt.axis("off")
-                plt.show()
+                plt.show()'''
 
         image = transformed['image']
         boxes = transformed['bboxes']
