@@ -40,10 +40,9 @@ def train(model, optimizer, train_loader, device, epoch):
     epoch_loss = {k: v / num_batches for k, v in epoch_loss.items()}
     print(f"Epoch {epoch} Average Loss Components: {epoch_loss}")
     return loss_value
-def evaluate_torchmetrics(model,valid_loader,valid_gt,device):
+def evaluate_torchmetrics(model,valid_loader,device):
     print('Validating....')
     model.eval()
- #   valid_gt=convert_evalset_coco(valid_loader.dataset.patient_ids,'./')
     metric = MeanAveragePrecision(box_format='xyxy', iou_type='bbox')
     metric.reset()
     for images,targets in valid_loader:
