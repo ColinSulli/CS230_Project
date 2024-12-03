@@ -1,0 +1,382 @@
+Running on device cuda
+total_positive_patient_ids for training 7971
+total negative_patient_ids for training 7971
+size of patient_ids_train 12752
+size of patient_ids_validation 3190
+model initialized
+runnng epoch: 1
+Epoch 0 Average Loss Components: {'loss_classifier': 0.08453177420803377, 'loss_box_reg': 0.09950245380631813, 'loss_rpn_box_reg': 0.0052519547829995026, 'loss_objectness': 0.020796420584331118}
+Validating....
+Epoch #1 mAP@0.50:0.95: 0.16114641726016998
+Epoch #1 mAP@0.50: 0.4806158244609833
+Epoch #1 mAP for small objects: -1.0
+Epoch #1 mAP for medium objects: 0.0003351840714458376
+Epoch #1 mAP for large objects: 0.16247263550758362
+Overall Recall: 0.3875
+
+BEST VALIDATION mAP: 0.16114641726016998
+
+SAVING BEST MODEL FOR EPOCH: 1
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 2
+Epoch 1 Average Loss Components: {'loss_classifier': 0.07627975834951908, 'loss_box_reg': 0.09994144030756678, 'loss_rpn_box_reg': 0.004191153210883238, 'loss_objectness': 0.008561072979707983}
+Validating....
+Epoch #2 mAP@0.50:0.95: 0.17669929563999176
+Epoch #2 mAP@0.50: 0.5047820806503296
+Epoch #2 mAP for small objects: -1.0
+Epoch #2 mAP for medium objects: 0.027329951524734497
+Epoch #2 mAP for large objects: 0.17805714905261993
+Overall Recall: 0.4161
+
+BEST VALIDATION mAP: 0.17669929563999176
+
+SAVING BEST MODEL FOR EPOCH: 2
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 3
+Epoch 2 Average Loss Components: {'loss_classifier': 0.07027611787734177, 'loss_box_reg': 0.09484165094014599, 'loss_rpn_box_reg': 0.0038701128133576215, 'loss_objectness': 0.006777035712419747}
+Validating....
+Epoch #3 mAP@0.50:0.95: 0.1921321600675583
+Epoch #3 mAP@0.50: 0.5417332053184509
+Epoch #3 mAP for small objects: -1.0
+Epoch #3 mAP for medium objects: 0.022625261917710304
+Epoch #3 mAP for large objects: 0.19333361089229584
+Overall Recall: 0.4374
+
+BEST VALIDATION mAP: 0.1921321600675583
+
+SAVING BEST MODEL FOR EPOCH: 3
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 4
+Epoch 3 Average Loss Components: {'loss_classifier': 0.06417997789521289, 'loss_box_reg': 0.0894045234059534, 'loss_rpn_box_reg': 0.0035985525337195695, 'loss_objectness': 0.005366845046025596}
+Validating....
+Epoch #4 mAP@0.50:0.95: 0.2031525820493698
+Epoch #4 mAP@0.50: 0.5896311402320862
+Epoch #4 mAP for small objects: -1.0
+Epoch #4 mAP for medium objects: 0.019405048340559006
+Epoch #4 mAP for large objects: 0.2043428122997284
+Overall Recall: 0.4271
+
+BEST VALIDATION mAP: 0.2031525820493698
+
+SAVING BEST MODEL FOR EPOCH: 4
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 5
+Epoch 4 Average Loss Components: {'loss_classifier': 0.05808143607802909, 'loss_box_reg': 0.08365781833809173, 'loss_rpn_box_reg': 0.0033260394015238144, 'loss_objectness': 0.004177375717204046}
+Validating....
+Epoch #5 mAP@0.50:0.95: 0.2432211935520172
+Epoch #5 mAP@0.50: 0.6230005025863647
+Epoch #5 mAP for small objects: -1.0
+Epoch #5 mAP for medium objects: 0.049080125987529755
+Epoch #5 mAP for large objects: 0.2449599951505661
+Overall Recall: 0.4685
+
+BEST VALIDATION mAP: 0.2432211935520172
+
+SAVING BEST MODEL FOR EPOCH: 5
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 6
+Epoch 5 Average Loss Components: {'loss_classifier': 0.05008614868150003, 'loss_box_reg': 0.07658125199126302, 'loss_rpn_box_reg': 0.003029837989544541, 'loss_objectness': 0.0030219304887168902}
+Validating....
+Epoch #6 mAP@0.50:0.95: 0.2699827253818512
+Epoch #6 mAP@0.50: 0.6744301915168762
+Epoch #6 mAP for small objects: -1.0
+Epoch #6 mAP for medium objects: 0.059268612414598465
+Epoch #6 mAP for large objects: 0.271600604057312
+Overall Recall: 0.4830
+
+BEST VALIDATION mAP: 0.2699827253818512
+
+SAVING BEST MODEL FOR EPOCH: 6
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 7
+Epoch 6 Average Loss Components: {'loss_classifier': 0.0417892065567024, 'loss_box_reg': 0.06688382164540103, 'loss_rpn_box_reg': 0.002745630048292476, 'loss_objectness': 0.002223089670388324}
+Validating....
+Epoch #7 mAP@0.50:0.95: 0.3313780426979065
+Epoch #7 mAP@0.50: 0.715624988079071
+Epoch #7 mAP for small objects: -1.0
+Epoch #7 mAP for medium objects: 0.08464730530977249
+Epoch #7 mAP for large objects: 0.33298319578170776
+Overall Recall: 0.5080
+
+BEST VALIDATION mAP: 0.3313780426979065
+
+SAVING BEST MODEL FOR EPOCH: 7
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 8
+Epoch 7 Average Loss Components: {'loss_classifier': 0.035425723937367544, 'loss_box_reg': 0.05962407446397443, 'loss_rpn_box_reg': 0.002438551515806101, 'loss_objectness': 0.0016556986133621796}
+Validating....
+Epoch #8 mAP@0.50:0.95: 0.38693639636039734
+Epoch #8 mAP@0.50: 0.7696934342384338
+Epoch #8 mAP for small objects: -1.0
+Epoch #8 mAP for medium objects: 0.1272723227739334
+Epoch #8 mAP for large objects: 0.3883267045021057
+Overall Recall: 0.5307
+
+BEST VALIDATION mAP: 0.38693639636039734
+
+SAVING BEST MODEL FOR EPOCH: 8
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 9
+Epoch 8 Average Loss Components: {'loss_classifier': 0.03006138015492297, 'loss_box_reg': 0.053429443810142134, 'loss_rpn_box_reg': 0.0021749902652947795, 'loss_objectness': 0.0011702342447220881}
+Validating....
+Epoch #9 mAP@0.50:0.95: 0.43328481912612915
+Epoch #9 mAP@0.50: 0.7856951951980591
+Epoch #9 mAP for small objects: -1.0
+Epoch #9 mAP for medium objects: 0.1280335783958435
+Epoch #9 mAP for large objects: 0.4353575110435486
+Overall Recall: 0.5627
+
+BEST VALIDATION mAP: 0.43328481912612915
+
+SAVING BEST MODEL FOR EPOCH: 9
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 10
+Epoch 9 Average Loss Components: {'loss_classifier': 0.026309422443603625, 'loss_box_reg': 0.04845348172622454, 'loss_rpn_box_reg': 0.001957888804743246, 'loss_objectness': 0.0009674877692767182}
+Validating....
+Epoch #10 mAP@0.50:0.95: 0.468957781791687
+Epoch #10 mAP@0.50: 0.8011508584022522
+Epoch #10 mAP for small objects: -1.0
+Epoch #10 mAP for medium objects: 0.15216432511806488
+Epoch #10 mAP for large objects: 0.47079914808273315
+Overall Recall: 0.5752
+
+BEST VALIDATION mAP: 0.468957781791687
+
+SAVING BEST MODEL FOR EPOCH: 10
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 11
+Epoch 10 Average Loss Components: {'loss_classifier': 0.02280216012619061, 'loss_box_reg': 0.04399166475684082, 'loss_rpn_box_reg': 0.0017666348472924905, 'loss_objectness': 0.0007637686537232168}
+Validating....
+Epoch #11 mAP@0.50:0.95: 0.4875793755054474
+Epoch #11 mAP@0.50: 0.8014799356460571
+Epoch #11 mAP for small objects: -1.0
+Epoch #11 mAP for medium objects: 0.16691504418849945
+Epoch #11 mAP for large objects: 0.49031174182891846
+Overall Recall: 0.5870
+
+BEST VALIDATION mAP: 0.4875793755054474
+
+SAVING BEST MODEL FOR EPOCH: 11
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 12
+Epoch 11 Average Loss Components: {'loss_classifier': 0.020415199863725617, 'loss_box_reg': 0.04060492394760793, 'loss_rpn_box_reg': 0.001612237404272262, 'loss_objectness': 0.000638256487916525}
+Validating....
+Epoch #12 mAP@0.50:0.95: 0.4883113503456116
+Epoch #12 mAP@0.50: 0.7949542999267578
+Epoch #12 mAP for small objects: -1.0
+Epoch #12 mAP for medium objects: 0.20412933826446533
+Epoch #12 mAP for large objects: 0.48991885781288147
+Overall Recall: 0.5813
+
+BEST VALIDATION mAP: 0.4883113503456116
+
+SAVING BEST MODEL FOR EPOCH: 12
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 13
+Epoch 12 Average Loss Components: {'loss_classifier': 0.01887433202493841, 'loss_box_reg': 0.03823187869711729, 'loss_rpn_box_reg': 0.0014713944235920195, 'loss_objectness': 0.0005287546692808239}
+Validating....
+Epoch #13 mAP@0.50:0.95: 0.5227931141853333
+Epoch #13 mAP@0.50: 0.8038522601127625
+Epoch #13 mAP for small objects: -1.0
+Epoch #13 mAP for medium objects: 0.16081567108631134
+Epoch #13 mAP for large objects: 0.5256635546684265
+Overall Recall: 0.6125
+
+BEST VALIDATION mAP: 0.5227931141853333
+
+SAVING BEST MODEL FOR EPOCH: 13
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 14
+Epoch 13 Average Loss Components: {'loss_classifier': 0.016904013841881015, 'loss_box_reg': 0.03540761471338046, 'loss_rpn_box_reg': 0.0013546568839508978, 'loss_objectness': 0.00044958569407635435}
+Validating....
+Epoch #14 mAP@0.50:0.95: 0.5439640283584595
+Epoch #14 mAP@0.50: 0.8016237020492554
+Epoch #14 mAP for small objects: -1.0
+Epoch #14 mAP for medium objects: 0.22705993056297302
+Epoch #14 mAP for large objects: 0.5449482798576355
+Overall Recall: 0.6246
+
+BEST VALIDATION mAP: 0.5439640283584595
+
+SAVING BEST MODEL FOR EPOCH: 14
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 15
+Epoch 14 Average Loss Components: {'loss_classifier': 0.01522957040714809, 'loss_box_reg': 0.03246486001636908, 'loss_rpn_box_reg': 0.00125484500028119, 'loss_objectness': 0.0003602613395072514}
+Validating....
+Epoch #15 mAP@0.50:0.95: 0.5539249777793884
+Epoch #15 mAP@0.50: 0.8130760788917542
+Epoch #15 mAP for small objects: -1.0
+Epoch #15 mAP for medium objects: 0.20394860208034515
+Epoch #15 mAP for large objects: 0.5564454793930054
+Overall Recall: 0.6254
+
+BEST VALIDATION mAP: 0.5539249777793884
+
+SAVING BEST MODEL FOR EPOCH: 15
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 16
+Epoch 15 Average Loss Components: {'loss_classifier': 0.011719194084546693, 'loss_box_reg': 0.023159453414416775, 'loss_rpn_box_reg': 0.0008488816561962045, 'loss_objectness': 0.00021391836762238314}
+Validating....
+Epoch #16 mAP@0.50:0.95: 0.6149380803108215
+Epoch #16 mAP@0.50: 0.811615526676178
+Epoch #16 mAP for small objects: -1.0
+Epoch #16 mAP for medium objects: 0.24068687856197357
+Epoch #16 mAP for large objects: 0.6166912913322449
+Overall Recall: 0.6733
+
+BEST VALIDATION mAP: 0.6149380803108215
+
+SAVING BEST MODEL FOR EPOCH: 16
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 17
+Epoch 16 Average Loss Components: {'loss_classifier': 0.010089987741669634, 'loss_box_reg': 0.017361614304954604, 'loss_rpn_box_reg': 0.0007169259043670492, 'loss_objectness': 0.0001914494078403423}
+Validating....
+Epoch #17 mAP@0.50:0.95: 0.6342427730560303
+Epoch #17 mAP@0.50: 0.810910701751709
+Epoch #17 mAP for small objects: -1.0
+Epoch #17 mAP for medium objects: 0.25385430455207825
+Epoch #17 mAP for large objects: 0.6360304951667786
+Overall Recall: 0.6914
+
+BEST VALIDATION mAP: 0.6342427730560303
+
+SAVING BEST MODEL FOR EPOCH: 17
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 18
+Epoch 17 Average Loss Components: {'loss_classifier': 0.009062801261933552, 'loss_box_reg': 0.01409625300627501, 'loss_rpn_box_reg': 0.0006523987429174583, 'loss_objectness': 0.00017233873385349548}
+Validating....
+Epoch #18 mAP@0.50:0.95: 0.6477154493331909
+Epoch #18 mAP@0.50: 0.8126041889190674
+Epoch #18 mAP for small objects: -1.0
+Epoch #18 mAP for medium objects: 0.2775990068912506
+Epoch #18 mAP for large objects: 0.6496236324310303
+Overall Recall: 0.7039
+
+BEST VALIDATION mAP: 0.6477154493331909
+
+SAVING BEST MODEL FOR EPOCH: 18
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 19
+Epoch 18 Average Loss Components: {'loss_classifier': 0.008360006667865664, 'loss_box_reg': 0.011823366843459021, 'loss_rpn_box_reg': 0.0006081042830286049, 'loss_objectness': 0.0001575074694024422}
+Validating....
+Epoch #19 mAP@0.50:0.95: 0.6613579392433167
+Epoch #19 mAP@0.50: 0.8132286071777344
+Epoch #19 mAP for small objects: -1.0
+Epoch #19 mAP for medium objects: 0.2894766628742218
+Epoch #19 mAP for large objects: 0.6634283661842346
+Overall Recall: 0.7149
+
+BEST VALIDATION mAP: 0.6613579392433167
+
+SAVING BEST MODEL FOR EPOCH: 19
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 20
+Epoch 19 Average Loss Components: {'loss_classifier': 0.007814174072256198, 'loss_box_reg': 0.010341937076938696, 'loss_rpn_box_reg': 0.0005722480055216329, 'loss_objectness': 0.00016749927718326345}
+Validating....
+Epoch #20 mAP@0.50:0.95: 0.6733970046043396
+Epoch #20 mAP@0.50: 0.8079481720924377
+Epoch #20 mAP for small objects: -1.0
+Epoch #20 mAP for medium objects: 0.3044554591178894
+Epoch #20 mAP for large objects: 0.6755890250205994
+Overall Recall: 0.7232
+
+BEST VALIDATION mAP: 0.6733970046043396
+
+SAVING BEST MODEL FOR EPOCH: 20
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 21
+Epoch 20 Average Loss Components: {'loss_classifier': 0.007409634711949118, 'loss_box_reg': 0.00925698538276208, 'loss_rpn_box_reg': 0.0005437630859595443, 'loss_objectness': 0.0001421235731810879}
+Validating....
+Epoch #21 mAP@0.50:0.95: 0.6778407096862793
+Epoch #21 mAP@0.50: 0.804967999458313
+Epoch #21 mAP for small objects: -1.0
+Epoch #21 mAP for medium objects: 0.30792078375816345
+Epoch #21 mAP for large objects: 0.6826620697975159
+Overall Recall: 0.7277
+
+BEST VALIDATION mAP: 0.6778407096862793
+
+SAVING BEST MODEL FOR EPOCH: 21
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 22
+Epoch 21 Average Loss Components: {'loss_classifier': 0.007138544534971127, 'loss_box_reg': 0.008480791891767285, 'loss_rpn_box_reg': 0.0005185518122391201, 'loss_objectness': 0.0001291268936989003}
+Validating....
+Epoch #22 mAP@0.50:0.95: 0.6859579086303711
+Epoch #22 mAP@0.50: 0.8054274916648865
+Epoch #22 mAP for small objects: -1.0
+Epoch #22 mAP for medium objects: 0.321039617061615
+Epoch #22 mAP for large objects: 0.6892926692962646
+Overall Recall: 0.7339
+
+BEST VALIDATION mAP: 0.6859579086303711
+
+SAVING BEST MODEL FOR EPOCH: 22
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 23
+Epoch 22 Average Loss Components: {'loss_classifier': 0.0068269408811073625, 'loss_box_reg': 0.007910458162204051, 'loss_rpn_box_reg': 0.0004985032097657305, 'loss_objectness': 0.0001231393121977713}
+Validating....
+Epoch #23 mAP@0.50:0.95: 0.6928814053535461
+Epoch #23 mAP@0.50: 0.806143581867218
+Epoch #23 mAP for small objects: -1.0
+Epoch #23 mAP for medium objects: 0.3133663237094879
+Epoch #23 mAP for large objects: 0.6950244307518005
+Overall Recall: 0.7383
+
+BEST VALIDATION mAP: 0.6928814053535461
+
+SAVING BEST MODEL FOR EPOCH: 23
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 24
+Epoch 23 Average Loss Components: {'loss_classifier': 0.006630345098701084, 'loss_box_reg': 0.007466811482004945, 'loss_rpn_box_reg': 0.0004798175691102458, 'loss_objectness': 0.00011696438847263094}
+Validating....
+Epoch #24 mAP@0.50:0.95: 0.6967778205871582
+Epoch #24 mAP@0.50: 0.8057311773300171
+Epoch #24 mAP for small objects: -1.0
+Epoch #24 mAP for medium objects: 0.321039617061615
+Epoch #24 mAP for large objects: 0.6994322538375854
+Overall Recall: 0.7415
+
+BEST VALIDATION mAP: 0.6967778205871582
+
+SAVING BEST MODEL FOR EPOCH: 24
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 25
+Epoch 24 Average Loss Components: {'loss_classifier': 0.006409565467775552, 'loss_box_reg': 0.007074271701071808, 'loss_rpn_box_reg': 0.00046436160058078, 'loss_objectness': 0.00013059073577421655}
+Validating....
+Epoch #25 mAP@0.50:0.95: 0.6975158452987671
+Epoch #25 mAP@0.50: 0.8052889704704285
+Epoch #25 mAP for small objects: -1.0
+Epoch #25 mAP for medium objects: 0.30891087651252747
+Epoch #25 mAP for large objects: 0.7009454965591431
+Overall Recall: 0.7421
+
+BEST VALIDATION mAP: 0.6975158452987671
+
+SAVING BEST MODEL FOR EPOCH: 25
+
+SAVING PLOTS COMPLETE...
+runnng epoch: 26
