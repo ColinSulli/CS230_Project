@@ -50,47 +50,9 @@ def validate_labels_boxes(image_dir,train_ids,validation_ids,annotations):
             assert 'boxes' in target and 'labels' in target, f"Missing keys in target: {target.keys()}"
             assert target['boxes'].shape[1] == 4 or target['boxes'].numel() == 0, f"Invalid boxes: {target['boxes']}"
             assert target['labels'].dtype == torch.int64, f"Invalid labels dtype: {target['labels']}"
-            #assert target['boxes'].numel() > 0, "Empty boxes in target"
-            #assert target['labels'].numel() > 0, "Empty labels in target"
-            #print(f"Image ID: {target['image_id'].item()}, Boxes: {target['boxes'].shape}, Labels: {target['labels'].shape}")
 
-def data_init_orig(annotations_file):
-    # Setting up data
-    labels = pd.read_csv(annotations_file)
-
-    print('Total positive sample size', len(labels['Target'] == 1))
-    print('Total negative sample size', len(labels['Target'] == 0))
-    positive_patient_ids = labels[labels['Target'] == 1]['patientId'].unique()
-    negative_patient_ids = labels[labels['Target'] == 0]['patientId'].unique()
-    np.random.seed(42)
-    np.random.shuffle(positive_patient_ids)
-    np.random.shuffle(negative_patient_ids)
-
-    positive_train_ids, positive_val_ids = train_test_split(
-        positive_patient_ids,
-        train_size=0.8,
-        random_state=42,
-        shuffle=True
-    )
-
-    # Split negative patient IDs
-    negative_train_ids, negative_val_ids = train_test_split(
-        negative_patient_ids,
-        train_size=0.8,
-        random_state=42,
-        shuffle=True
-    )
-
-    # Combine for training and validation
-    patient_ids_train = list(positive_train_ids) + list(negative_train_ids)
-    patient_ids_validation = list(positive_val_ids) + list(negative_val_ids)
-    print('size of patient_ids_train', len(patient_ids_train))
-    print('size of patient_ids_validation', len(patient_ids_validation))
-
-    return patient_ids_train, patient_ids_validation, labels
-
-
-def data_init_v2(annotations_file):
+# Trains over 6000 positive and 6000 negative examples
+def data_init_v1(annotations_file):
     # Setting up data
     positive_sample_size = 6000
     labels = pd.read_csv(annotations_file)
@@ -145,7 +107,8 @@ def check_cut_off(all_patient_ids, index):
 
     return index
 
-def new_data_init(annotations_file, device):
+# Trains over entire dataset
+def new_data_init_v2(annotations_file, device):
     # Setting up data
     labels = pd.read_csv(annotations_file)
 
@@ -167,10 +130,6 @@ def new_data_init(annotations_file, device):
     neg_train = negative_patient_ids[:int(0.8 * len(negative_patient_ids))]
     neg_valid = negative_patient_ids[int(0.8 * len(negative_patient_ids)):int(0.9 * len(negative_patient_ids))]
     neg_test = negative_patient_ids[int(0.9 * len(negative_patient_ids)):]
-
-    #train_set = [np.concatenate((pos_train, neg_train[:int((1/3) * len(neg_train))])),
-    #             np.concatenate((pos_train, neg_train[int((1/3) * len(neg_train)) : int((2/3) * len(neg_train))])),
-    #             np.concatenate((pos_train, neg_train[int((2/3) * len(neg_train)):]))]
 
     # combine valid and test
     train_set = list(pos_train) + list(neg_train)
@@ -199,7 +158,6 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             model = get_object_detection_model_giou(2)
     model.to(device)
     print('model initialized')
-    #optimizer = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9323368245702841, weight_decay=0.0001298489873419346)
     optimizer=torch.optim.Adam(model.parameters(), lr=0.00001)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
     best_val_map=0.0
@@ -217,10 +175,6 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
 
             lr_scheduler.step()
         try:
-            #for i, thresh in enumerate(np.arange(0.3, 0.8, 0.02)):
-            #evaluate_custom(model, valid_data_loader, device, optimizer, summary_writer, epoch, 0.85)
-            #if epoch != 0 and epoch % 3 == 0:
-                #coco_evaluator = evaluate(model,valid_loader,valid_gt,device, summary_writer)
             evaluate_torchmetrics(model, valid_loader, valid_gt, device, summary_writer, epoch)
         except Exception as e:
             print(f"An exception occurred: {e}")
@@ -231,19 +185,15 @@ def train_and_evaluate(train_data_loader, valid_data_loader, test_data_loader, d
             val_map = stats[0]
             val_maps.append(val_map)
 
-        if epoch == 10:
-            print("TEST DATASET")
-            coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
-            evaluate_torchmetrics(model, test_data_loader, test_gt, device, summary_writer, -1)
-
-    '''e = range(1, epochs + 1)
+    e = range(1, epochs + 1)
     plt.plot(e, val_maps, label='Validation mAP')
     plt.xlabel('Epoch')
     plt.ylabel('mAP')
     plt.title('Validation mAP over Epochs')
     plt.legend()
-    plt.show()'''
+    plt.show()
 
+    # Evaluate Test Dataset
     coco_evaluator = evaluate(model, test_data_loader, test_gt, device, summary_writer)
     evaluate_torchmetrics(model, test_data_loader, test_gt, device, summary_writer, -1)
     # evaluate on test set
@@ -261,7 +211,7 @@ if __name__ == "__main__":
     #    device = torch.device('mps')
 
     print('Running on device', device)
-    train_ids, validation_ids, test_ids, annotations = data_init_v2(annotations_file)
+    train_ids, validation_ids, test_ids, annotations = data_init_v1(annotations_file)
     mean, std = get_mean_std_dataset(image_dir, train_ids, validation_ids, annotations, device)
     train_loader, valid_loader, test_loader = get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids,
                                                                         annotations, mean, std, device, is_train_augmented=True)

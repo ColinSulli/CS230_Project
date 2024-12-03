@@ -57,19 +57,13 @@ class PneumoniaDataset(Dataset):
         if self.fraction != 1:
             r = np.random.randint(0, 100)
             if r <= int(self.fraction * 100):
-                '''print("HERE!")
-                plt.imshow(image, cmap="gray")
-                plt.title("Original Image")
-                plt.axis("off")
-                plt.show()'''
+                # Uncomment to print original image
+                # print_augmentation(image, "Original Image")
 
                 transformed = self.trnfrms(image=image, bboxes=boxes, labels=labels)
 
-                # Augmented image
-                '''plt.imshow(transformed['image'][0], cmap="gray")
-                plt.title("Augmented Image")
-                plt.axis("off")
-                plt.show()'''
+                # Uncomment to print augmented image
+                # print_augmentation(transformed['image'][0], "Augmented Image")
 
         image = transformed['image']
         boxes = transformed['bboxes']
@@ -96,10 +90,14 @@ class PneumoniaDataset(Dataset):
         iscrowd = torch.zeros((len(labels),), dtype=torch.int64)
         target['iscrowd'] = iscrowd
 
-        # if self.transforms:
-
         return image, target
 
+
+def print_augmentation(image, title):
+    plt.imshow(image, cmap="gray")
+    plt.title(title)
+    plt.axis("off")
+    plt.show()
 
 def custom_collate_fn(batch):
     images, targets = zip(*batch)
@@ -156,22 +154,6 @@ def get_dataloaders_with_norm(image_dir, train_ids, validation_ids, test_ids, an
         A.ColorJitter(brightness=0.2, contrast=0.2, p=0.3),
         A.Affine(shear=(3.5, 3.5), p=0.3),
         ToTensorV2()],
-        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-
-    train_flip_horizontal = A.Compose([
-        A.HorizontalFlip(p=0.5), ToTensorV2()],
-        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-    train_blur = A.Compose([
-        A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 2), p=0.5), ToTensorV2()],
-        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-    train_rotate = A.Compose([
-        A.Rotate(limit=6, p=0.5), ToTensorV2()],
-        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-    train_color = A.Compose([
-        A.ColorJitter(brightness=0.1, contrast=0.1, p=0.5), ToTensorV2()],
-        bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
-    train_shear = A.Compose([
-        A.Affine(shear=(2.5, 2.5), p=0.2), ToTensorV2()],
         bbox_params=A.BboxParams(format='coco', label_fields=['labels']))
 
     # train_transform=get_train_loader_with_augmentation(mean_value,std_value)

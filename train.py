@@ -50,9 +50,6 @@ def train(model, optimizer, train_loader, device, epoch, summary_writer):
         i += 1
         sum_writter_var += 1
 
-        #if i == 10:
-        #    break
-
 # code taken from public repo:
 # https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/
 def calculate_iou(box_1, box_2):
@@ -142,9 +139,6 @@ def evaluate_custom(model, valid_loader, device, optimizer, summary_writer, epoc
     for images, targets in tqdm(valid_loader, desc=f'eval epoch {epoch}', disable=False):
         index += 1
 
-        #if index == 10:
-        #    break
-
         images = list(img.to(device) for img in images)
         with (torch.no_grad()):
             # get predictions
@@ -154,7 +148,7 @@ def evaluate_custom(model, valid_loader, device, optimizer, summary_writer, epoc
             filtered_predictions = filter_prediction_scores(prediction, filter_threshold=thresh) #.83 is the best
 
             # Perform non max suppression
-            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=0.5)
+            filtered_predictions = calculate_nms(filtered_predictions, iou_threshold=iou_threshold)
 
             for i, iou_threshold in enumerate(np.arange(0.45, 0.8, 0.05)):
                 matched_idx = set()
@@ -195,6 +189,7 @@ def evaluate_custom(model, valid_loader, device, optimizer, summary_writer, epoc
         print("Precision: ", precision)
         print("Recall: ", recall)
 
+    # -1 means it is the test set
     if epoch != -1:
         summary_writer.add_scalar(f'Binary Accuracy: ', correct[0] / len(valid_loader), epoch)
 
