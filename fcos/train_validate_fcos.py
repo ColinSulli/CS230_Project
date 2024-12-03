@@ -73,7 +73,7 @@ def data_init(annotations_file):
     print('size of patient_ids_train',len(patient_ids_train))
     print('size of patient_ids_validation',len(patient_ids_validation))
     return patient_ids_train,patient_ids_validation,labels
-def train_and_evaluate(train_data_loader,val_loader,device,epochs,valid_gt) :
+def train_and_evaluate(train_data_loader,val_loader,device,epochs) :
     model=get_object_detection_model_fcos(2)
     model.to(device)
     print('model initialized')
@@ -99,7 +99,7 @@ def train_and_evaluate(train_data_loader,val_loader,device,epochs,valid_gt) :
         train_loss_list.append(train_loss)
         lr_scheduler.step()
         try:
-            metric_summary = evaluate_torchmetrics(model, val_loader,valid_gt, device=device)
+            metric_summary = evaluate_torchmetrics(model, val_loader, device=device)
             print(f"Epoch #{epoch+1} mAP@0.50:0.95: {metric_summary['map']}")
             print(f"Epoch #{epoch+1} mAP@0.50: {metric_summary['map_50']}")
             current_valid_map=metric_summary['map']
@@ -129,5 +129,4 @@ if __name__ == "__main__":
     mean,std=get_mean_std_dataset(image_dir,train_ids,validation_ids,annotations)
     #mean,std=0.0,0.0
     train_loader,valid_loader= get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean,std,device,True)
-    coco_format_validation_ds=convert_evalset_coco(validation_ids,annotations,'./')
-    train_and_evaluate(train_loader,valid_loader,device,num_epochs,coco_format_validation_ds)
+    train_and_evaluate(train_loader,valid_loader,device,num_epochs)
