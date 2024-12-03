@@ -68,7 +68,7 @@ def get_init_norm_transform():
 
 def get_norm_transform(mean_value,std_value,device):
     transforms_list=[transforms.ToTensor()]
-    #transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
+    transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
     return transforms.Compose(transforms_list)
 
 def get_train_dataloader_no_norm(image_dir,train_ids,validation_ids,annotations):
@@ -100,7 +100,7 @@ def get_train_loader_with_augmentation(mean_value,std_value):
     #transforms_list.append(transforms.RandomVerticalFlip(0.5))
     #transforms_list.append(transforms.RandomResizedCrop(size=(1024, 1024), scale=(0.8, 1.0)))
     #transforms_list.append(transforms.ColorJitter(brightness=0.2, contrast=0.2))
-    #transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
+    transforms_list.append(transforms.Normalize(mean=mean_value.tolist(), std=std_value.tolist()))
     return transforms.Compose(transforms_list)
 def get_dataloaders_with_norm(image_dir,train_ids,validation_ids,annotations,mean_value,std_value,device,is_train_augmented):
     norm_transforms=get_norm_transform(mean_value,std_value,device)
